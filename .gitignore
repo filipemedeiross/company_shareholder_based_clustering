@@ -1,3 +1,9 @@
+/data/*
+/data/socios/*
+/data/estabelecimentos/*
+!/data/*/
+!/data/README.md
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
