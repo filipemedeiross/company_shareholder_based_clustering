@@ -1,8 +1,7 @@
-/data/*
-/data/socios/*
-/data/estabelecimentos/*
-!/data/*/
-!/data/README.md
+# Ignoring data files
+#/data/**/*
+#!/data/**/
+#!/data/**/README.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
