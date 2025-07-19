@@ -1,3 +1,3 @@
 # Company shareholder based clustering
 
-Company clustering: mapping businesses by shared ownership and stakeholders
+Clustering companies by mapping shared ownership and stakeholder relationships
