@@ -2,7 +2,7 @@
 
 This project uses public datasets provided by the [Receita Federal do Brasil (RFB)](https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/), which contain detailed information on Brazilian companies and their ownership structures.
 
-### 📂 Data Organization
+### 📂 DATA ORGANIZATION
 
 ```
 data/
@@ -19,7 +19,7 @@ data/
             socios9.csv
 ```
 
-### 📥 Data Ingestion
+### 📥 DATA INGESTION
 
 The datasets must be downloaded and extracted by running the script `scripts/1_data_ingestion.py`. The ingestion process includes:
 
