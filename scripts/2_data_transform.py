@@ -104,9 +104,9 @@ for i in range(10):
         del chunk
 
 
-# ==========================================================================
-# PART 3 - Reload both files and rewrite with higher compression (Zstandard)
-# ==========================================================================
+# ==============================================================
+# PART 3 - Reload both files and rewrite with higher compression
+# ==============================================================
 partners = pd.read_parquet(OUTPUT_PARTNERS)
 partners.to_parquet(
     OUTPUT_PARTNERS   ,
