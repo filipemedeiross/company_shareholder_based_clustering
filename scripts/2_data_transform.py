@@ -8,9 +8,9 @@ COLS_PARTNERS = [0, 2, 5]
 COLS_BUSINESS = [0, 4, 6, 10, 18]
 
 NAMES_PARTNERS = [
-    'cnpj'             ,
-    'name_partner'     ,
-    'partnership_start',
+    'cnpj'        ,
+    'name_partner',
+    'start_date'  ,
 ]
 NAMES_BUSINESS = [
     'cnpj'        ,
@@ -48,7 +48,8 @@ for i in range(10):
     )
     df.dropna()
 
-    df.cnpj = df.cnpj.astype('int32')
+    df.cnpj       = df.cnpj.astype('int32')
+    df.start_date = df.start_date.astype('int32')
 
     df.to_parquet(
         OUTPUT_PARTNERS                ,
@@ -85,8 +86,12 @@ for i in range(10):
             .astype(str)
             .str.replace('-', '', regex=True)
             .astype(float)
-            .astype(int)
+            .astype('int32')
         )
+
+        chunk.cnpj         = chunk.cnpj.astype('int32')
+        chunk.closing_date = chunk.closing_date.astype('int32')
+        chunk.opening_date = chunk.opening_date.astype('int32')
 
         chunk.to_parquet(
             OUTPUT_BUSINESS                ,
@@ -106,15 +111,15 @@ partners = pd.read_parquet(OUTPUT_PARTNERS)
 
 partners.sort_values(
     by=[
-        'partnership_start',
-        'name_partner'     ,
+        'start_date'  ,
+        'name_partner',
     ],
     inplace=True,
 )
 partners.to_parquet(
-    OUTPUT_PARTNERS   ,
-    engine='pyarrow'  ,
-    index=False       ,
+    OUTPUT_PARTNERS ,
+    engine='pyarrow',
+    index=False     ,
 )
 
 del partners
@@ -131,9 +136,9 @@ business.sort_values(
     inplace=True,
 )
 business.to_parquet(
-    OUTPUT_BUSINESS   ,
-    engine='pyarrow'  ,
-    index=False       ,
+    OUTPUT_BUSINESS ,
+    engine='pyarrow',
+    index=False     ,
 )
 
 del business

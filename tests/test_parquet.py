@@ -1,4 +1,4 @@
-import random
+import csv
 import unittest
 import pandas as pd
 
@@ -10,55 +10,44 @@ class TestParquet(unittest.TestCase):
 
     PARTNERS_PARQUET      =  ROOT_DIR / 'data/parquet/partners.parquet'
     BUSINESS_PARQUET      =  ROOT_DIR / 'data/parquet/business.parquet'
-    SOCIOS_PATH           = [ROOT_DIR / f'data/csv/socios{i}.csv'           for i in range(10)]
-    ESTABELECIMENTOS_PATH = [ROOT_DIR / f'data/csv/estabelecimentos{i}.csv' for i in range(10)]
-
-    COLS_PARTNERS     = [0, 2, 5]
-    COLS_BUSINESS     = [0, 4, 6, 10, 18]
-
-    NAMES_PARTNERS = [
-        'cnpj'             ,
-        'name_partner'     ,
-        'partnership_start',
+    SOCIOS_PATH           = [
+        ROOT_DIR / f'data/csv/socios/socios{i}.csv'
+        for i in range(10)
     ]
-    NAMES_BUSINESS = [
-        'cnpj'        ,
-        'trade_name'  ,
-        'closing_date',
-        'opening_date',
-        'cep'         ,
+    ESTABELECIMENTOS_PATH = [
+        ROOT_DIR / f'data/csv/estabelecimentos/estabelecimentos{i}.csv'
+        for i in range(10)
     ]
 
+    COLS_PARTNERS = [0, 2, 5]
+    COLS_BUSINESS = [0, 4, 6, 10, 18]
 
 
     def test_partners_parquet_contains_csv_data(self):
         sample = pd.read_parquet(self.PARTNERS_PARQUET).sample(n=10)
 
-        for _, row in sample.iterrows():
+        for _, (cnpj, partner, start) in sample.iterrows():
             row_found = False
 
             for csv_path in self.SOCIOS_PATH:
-                df_csv = pd.read_csv(
-                    csv_path,
-                    sep=';',
-                    usecols=self.COLS_PARTNERS,
-                    names=self.NAMES_PARTNERS,
-                    encoding='latin-1',
-                    on_bad_lines='skip'
-                ).dropna()
+                with open(csv_path, encoding="latin-1", newline='') as f:
+                    reader = csv.reader(f, delimiter=';', quotechar='"')
 
-                df_csv.cnpj = df_csv.cnpj.astype('int32')
-                df_csv.partnership_start = pd.to_datetime(
-                    df_csv.partnership_start,
-                    format='%Y%m%d',
-                    errors='coerce'
-                )
+                    for row in reader:
+                        if not row:
+                            continue
 
-                match = df_csv[
-                    (df_csv.cnpj              == row.cnpj) &
-                    (df_csv.name_partner      == row.name_partner) &
-                    (df_csv.partnership_start == row.partnership_start)
-                ]
+                        try:
+                            cnpj_csv, partner_csv, start_csv = row[0], row[2], row[5]
+                        except IndexError:
+                            continue
+
+                        if cnpj == int(cnpj_csv) and \
+                           partner_csv == name_partner and \
+                        int(start_csv) == partnership_start:
+                            print(cnpj_csv, partner_csv, start_csv)
+                            print(cnpj, name_partner, partnership_start)
+                            break
 
                 if not match.empty:
                     print("\n✅ Match found!")
