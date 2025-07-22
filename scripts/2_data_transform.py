@@ -46,14 +46,9 @@ for i in range(10):
         encoding='latin-1'   ,
         on_bad_lines='skip'  ,
     )
-
     df.dropna()
-    df.cnpj              = df.cnpj.astype('int32')
-    df.partnership_start = pd.to_datetime(
-        df.partnership_start,
-        format='%Y%m%d'     ,
-        errors='coerce'     ,
-    )
+
+    df.cnpj = df.cnpj.astype('int32')
 
     df.to_parquet(
         OUTPUT_PARTNERS                ,
@@ -108,15 +103,37 @@ for i in range(10):
 # PART 3 - Reload both files and rewrite with higher compression
 # ==============================================================
 partners = pd.read_parquet(OUTPUT_PARTNERS)
+
+partners.sort_values(
+    by=[
+        'partnership_start',
+        'name_partner'     ,
+    ],
+    inplace=True,
+)
 partners.to_parquet(
     OUTPUT_PARTNERS   ,
     engine='pyarrow'  ,
     index=False       ,
 )
 
+del partners
+
+
 business = pd.read_parquet(OUTPUT_BUSINESS)
+
+business.sort_values(
+    by=[
+        'closing_date',
+        'opening_date',
+        'cep'         ,
+    ],
+    inplace=True,
+)
 business.to_parquet(
     OUTPUT_BUSINESS   ,
     engine='pyarrow'  ,
     index=False       ,
 )
+
+del business
