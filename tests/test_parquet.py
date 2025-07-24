@@ -18,8 +18,7 @@ class TestParquet(unittest.TestCase):
         samples = []
 
         with open(filename, mode='rb') as f:
-            pf = ParquetFile(f)
-
+            pf   = ParquetFile(f)
             idxs = sorted(random.sample(range(pf.count()), n))
 
             current_row = 0
@@ -39,10 +38,10 @@ class TestParquet(unittest.TestCase):
                 if current_row > idxs[-1]:
                     break
 
-        return pd.concat(samples)
+        return pd.concat(samples, ignore_index=True)
 
 
-    def find_row(self, files, cnpj, partner, start):
+    def find_row(self, files, cols, cnpj_col, cnpj):
         for csv_path in files:
             with open(csv_path, encoding="latin-1", newline='') as f:
                 reader = csv.reader(f, delimiter=';', quotechar='"')
@@ -51,22 +50,14 @@ class TestParquet(unittest.TestCase):
                     if not row:
                         continue
 
-                    try:
-                        cnpj_csv, partner_csv, start_csv = row[0], row[2], row[5]
-                    except IndexError:
-                        continue
-
-                    if (
-                        cnpj    == int(cnpj_csv)  and
-                        partner == partner_csv    and
-                        start   == int(start_csv)
-                    ):
-                        return cnpj_csv, partner_csv, start_csv
+                    if int(row[cnpj_col]) == cnpj:
+                        return [row[idx] for idx in cols]
 
         return None
 
 
     def test_partners_parquet_contains_csv_data(self):
+        CNPJ_COL, *_ = SOCIOS_COLS = [0, 2, 5]
         SOCIOS_PATH = [
             self.ROOT_DIR / f'data/csv/socios/socios{i}.csv'
             for i in range(10)
@@ -74,20 +65,55 @@ class TestParquet(unittest.TestCase):
 
         sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
 
-        for _, (cnpj, partner, start) in sample.iterrows():
-            row_found = self.find_row(SOCIOS_PATH, cnpj, partner, start)
+        for _, (cnpj, name, start_date) in sample.iterrows():
+            row_found = self.find_row(
+                SOCIOS_PATH,
+                SOCIOS_COLS,
+                CNPJ_COL   ,
+                cnpj       ,
+            )
 
-            with self.subTest(cnpj=cnpj, partner=partner, start=start):
+            with self.subTest(cnpj=cnpj, partner=name, start=start_date):
                 if row_found:
                     print(
-                        f"✅ Found match:\nParquet:     {cnpj}, {partner}, {start}\nCSV Match:   {row_found[0]}, {row_found[1]}, {row_found[2]}"
+                        f"✅ Found match:\n"
+                        f"Parquet:     {cnpj}, {name}, {start_date}\n"
+                        f"CSV Match:   {row_found[0]}, {row_found[1]}, {row_found[2]}"
                     )
                 else:
                     self.fail(
                         f"❌ CNPJ {cnpj} from parquet not found in any socios[0-9].csv file."
                     )
 
-        del sample
+
+    def test_business_parquet_contains_csv_data(self):
+        CNPJ_COL, *_ = ESTABELECIMENTOS_COLS = [0, 4, 6, 10, 18]
+        ESTABELECIMENTOS_PATH = [
+            self.ROOT_DIR / f'data/csv/estabelecimentos/estabelecimentos{i}.csv'
+            for i in range(10)
+        ]
+
+        sample = self.get_sample_from_parquet(self.BUSINESS_PARQUET)
+
+        for _, (cnpj, trade_name, closing_date, opening_date, cep) in sample.iterrows():
+            row_found = self.find_row(
+                ESTABELECIMENTOS_PATH,
+                ESTABELECIMENTOS_COLS,
+                CNPJ_COL             ,
+                cnpj                 ,
+            )
+
+            with self.subTest(cnpj=cnpj, name=trade_name, start=opening_date, end=closing_date, cep=cep):
+                if row_found:
+                    print(
+                        f"✅ Found match:\n"
+                        f"Parquet:     {cnpj}, {trade_name}, {opening_date}, {closing_date}, {cep}\n"
+                        f"CSV Match:   {row_found[0]}, {row_found[1]}, {row_found[2]}, {row_found[3]}, {row_found[4]}"
+                    )
+                else:
+                    self.fail(
+                        f"❌ CNPJ {cnpj} from parquet not found in any estabelecimentos[0-9].csv file."
+                    )
 
 
 if __name__ == '__main__':
