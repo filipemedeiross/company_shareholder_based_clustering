@@ -41,23 +41,54 @@ class TestParquet(unittest.TestCase):
         return pd.concat(samples, ignore_index=True)
 
 
-    def find_row(self, files, cols, cnpj_col, cnpj):
+    def find_row_partners(
+        self    ,
+        files   ,
+        cols    ,
+        cnpj_col,
+        name_col,
+        target  ,
+    ):
         for csv_path in files:
             with open(csv_path, encoding="latin-1", newline='') as f:
                 reader = csv.reader(f, delimiter=';', quotechar='"')
 
                 for row in reader:
-                    if not row:
-                        continue
+                    if (
+                        int(row[cnpj_col]) == target.cnpj and
+                            row[name_col]  == target.name_partner
+                    ):
+                        return [row[idx] for idx in cols]
 
-                    if int(row[cnpj_col]) == cnpj:
+        return None
+
+
+    def find_row_business(
+        self        ,
+        files       ,
+        cols        ,
+        cnpj_col    ,
+        closing_col ,
+        opening_col ,
+        target      ,
+    ):
+        for csv_path in files:
+            with open(csv_path, encoding="latin-1", newline='') as f:
+                reader = csv.reader(f, delimiter=';', quotechar='"')
+
+                for row in reader:
+                    if (
+                        int(row[cnpj_col    ]) == target.cnpj         and
+                        int(row[closing_col ]) == target.closing_date and
+                        int(row[opening_col ]) == target.opening_date
+                    ):
                         return [row[idx] for idx in cols]
 
         return None
 
 
     def test_partners_parquet_contains_csv_data(self):
-        CNPJ_COL, *_ = SOCIOS_COLS = [0, 2, 5]
+        CNPJ_COL, NAME_COL, _ = SOCIOS_COLS = [0, 2, 5]
         SOCIOS_PATH = [
             self.ROOT_DIR / f'data/csv/socios/socios{i}.csv'
             for i in range(10)
@@ -65,20 +96,26 @@ class TestParquet(unittest.TestCase):
 
         sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
 
-        for _, (cnpj, name, start_date) in sample.iterrows():
-            row_found = self.find_row(
+        for _, row in sample.iterrows():
+            found = self.find_row_partners(
                 SOCIOS_PATH,
                 SOCIOS_COLS,
                 CNPJ_COL   ,
-                cnpj       ,
+                NAME_COL   ,
+                row        ,
             )
 
-            with self.subTest(cnpj=cnpj, partner=name, start=start_date):
-                if row_found:
+            cnpj, name, start_date = row
+            with self.subTest(
+                cnpj=cnpj       ,
+                partner=name    ,
+                start=start_date,
+            ):
+                if found:
                     print(
                         f"✅ Found match:\n"
                         f"Parquet:     {cnpj}, {name}, {start_date}\n"
-                        f"CSV Match:   {row_found[0]}, {row_found[1]}, {row_found[2]}"
+                        f"CSV Match:   {found[0]}, {found[1]}, {found[2]}"
                     )
                 else:
                     self.fail(
@@ -87,7 +124,11 @@ class TestParquet(unittest.TestCase):
 
 
     def test_business_parquet_contains_csv_data(self):
-        CNPJ_COL, *_ = ESTABELECIMENTOS_COLS = [0, 4, 6, 10, 18]
+        CNPJ_COL    =  0
+        CLOSING_COL =  6
+        OPENING_COL = 10
+        ESTABELECIMENTOS_COLS = [0, 4, 6, 10, 18]
+
         ESTABELECIMENTOS_PATH = [
             self.ROOT_DIR / f'data/csv/estabelecimentos/estabelecimentos{i}.csv'
             for i in range(10)
@@ -95,20 +136,29 @@ class TestParquet(unittest.TestCase):
 
         sample = self.get_sample_from_parquet(self.BUSINESS_PARQUET)
 
-        for _, (cnpj, trade_name, closing_date, opening_date, cep) in sample.iterrows():
-            row_found = self.find_row(
+        for _, row in sample.iterrows():
+            found = self.find_row_business(
                 ESTABELECIMENTOS_PATH,
                 ESTABELECIMENTOS_COLS,
                 CNPJ_COL             ,
-                cnpj                 ,
+                CLOSING_COL          ,
+                OPENING_COL          ,
+                row                  ,
             )
 
-            with self.subTest(cnpj=cnpj, name=trade_name, start=opening_date, end=closing_date, cep=cep):
-                if row_found:
+            cnpj, trade_name, closing, opening, cep = row
+            with self.subTest(
+                cnpj=cnpj      ,
+                name=trade_name,
+                start=opening  ,
+                end=closing    ,
+                cep=cep        ,
+            ):
+                if found:
                     print(
                         f"✅ Found match:\n"
-                        f"Parquet:     {cnpj}, {trade_name}, {opening_date}, {closing_date}, {cep}\n"
-                        f"CSV Match:   {row_found[0]}, {row_found[1]}, {row_found[2]}, {row_found[3]}, {row_found[4]}"
+                        f"Parquet:     {cnpj}, {trade_name or ''}, {closing}, {opening}, {cep}\n"
+                        f"CSV Match:   {found[0]}, {found[1]}, {found[2]}, {found[3]}, {found[4]}"
                     )
                 else:
                     self.fail(
