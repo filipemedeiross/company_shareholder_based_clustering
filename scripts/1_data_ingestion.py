@@ -10,15 +10,19 @@ from multiprocessing import Process,      \
 BASE_URL = "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/2025-06/"
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-TMP_DIR              = ROOT_DIR / "tmp"
-ESTABELECIMENTOS_DIR = ROOT_DIR / "data/csv/estabelecimentos"
-SOCIOS_DIR           = ROOT_DIR / "data/csv/socios"
+TMP_DIR  = ROOT_DIR / "tmp"
+DICT_DIR = {
+    'Estabelecimentos' : ROOT_DIR / "data/csv/estabelecimentos",
+    'Empresas'         : ROOT_DIR / "data/csv/empresas"        ,
+    'Socios'           : ROOT_DIR / "data/csv/socios"          ,
+}
 
 
 def ensure_dirs():
     TMP_DIR.mkdir(parents=True, exist_ok=True)
-    ESTABELECIMENTOS_DIR.mkdir(parents=True, exist_ok=True)
-    SOCIOS_DIR.mkdir(parents=True, exist_ok=True)
+
+    for path in DICT_DIR.values():
+        path.mkdir(parents=True, exist_ok=True)
 
 
 def download_file(url, dest):
@@ -40,20 +44,23 @@ def extract_and_rename(zip_path, target_dir, prefix):
 
 
 def downloader_worker(file_type, total, task_queue):
-    target_dir = ESTABELECIMENTOS_DIR               \
-                 if file_type == "Estabelecimentos" \
-                 else SOCIOS_DIR
+    target_dir = DICT_DIR[file_type]
 
     for i in range(total):
-        url      = f"{BASE_URL}{file_type}{i}.zip"
-        zip_path = TMP_DIR / f"{file_type}{i}.zip"
+        zip_exists = target_dir / f"{file_type.lower()}{i}.csv"
 
-        print(f"[Download] Baixando {url}...")
-        try:
-            download_file(url, zip_path)
-            task_queue.put((zip_path, target_dir, f"{file_type.lower()}{i}"))
-        except Exception as e:
-            print(f"[Erro no download] {url}: {e}")
+        if zip_exists.exists():
+            print(f"[Download] Já existe: {zip_exists.name}, pulando download.")
+        else:
+            url      = f"{BASE_URL}{file_type}{i}.zip"
+            zip_path = TMP_DIR / f"{file_type}{i}.zip"
+
+            print(f"[Download] Baixando {url}...")
+            try:
+                download_file(url, zip_path)
+                task_queue.put((zip_path, target_dir, f"{file_type.lower()}{i}"))
+            except Exception as e:
+                print(f"[Erro no download] {url}: {e}")
 
 
 def extractor_worker(task_queue):
@@ -85,6 +92,7 @@ def main():
 
     downloaders = [
         Process(target=downloader_worker, args=("Estabelecimentos", 10, task_queue)),
+        Process(target=downloader_worker, args=("Empresas"        , 10, task_queue)),
         Process(target=downloader_worker, args=("Socios"          , 10, task_queue)),
     ]
     extractor   = Process(target=extractor_worker, args=(task_queue,))
