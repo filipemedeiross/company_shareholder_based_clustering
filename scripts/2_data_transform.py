@@ -1,12 +1,19 @@
 import pandas as pd
+
 from pathlib import Path
 
 
 CHUNKSIZE = 3000000
 
-COLS_PARTNERS  = [0, 2, 5]
-COLS_COMPANIES = [0, 1, 4]
-COLS_BUSINESS  = [0, 3, 4, 6, 10, 18]
+COLS_PARTNERS  = [
+    0, 2, 5
+]
+COLS_COMPANIES = [
+    0, 1, 4
+]
+COLS_BUSINESS  = [
+    0, 1, 2, 3, 4, 6, 10, 18
+]
 
 NAMES_PARTNERS  = [
     'cnpj'        ,
@@ -20,6 +27,8 @@ NAMES_COMPANIES = [
 ]
 NAMES_BUSINESS  = [
     'cnpj'        ,
+    'cnpj_order'  ,
+    'cnpj_dv'     ,
     'branch'      ,
     'trade_name'  ,
     'closing_date',
@@ -154,7 +163,9 @@ if not OUTPUT_BUSINESS.exists():
                 .astype('int32')
             )
 
-            chunk.cnpj         = chunk.cnpj.astype('int32')
+            chunk.cnpj         = chunk.cnpj.astype        ('int32')
+            chunk.cnpj_order   = chunk.cnpj_order.astype  ('int16')
+            chunk.cnpj_dv      = chunk.cnpj_dv.astype     ('int8' )
             chunk.closing_date = chunk.closing_date.astype('int32')
             chunk.opening_date = chunk.opening_date.astype('int32')
 
