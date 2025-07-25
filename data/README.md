@@ -13,8 +13,8 @@ data/
             empresas0.csv
             [...]
             empresas9.csv
-        estabelecimentos/
-            estabelecimentos0.csv   # physical units such as branches
+        estabelecimentos/           # physical units such as branches
+            estabelecimentos0.csv
             [...]
             estabelecimentos9.csv
         socios/                     # ownership structure (shareholders/partners)
