@@ -37,14 +37,14 @@ NAMES_BUSINESS  = [
 ]
 
 ROOT_DIR    = Path(__file__).resolve().parent.parent
+PARQUET_DIR = ROOT_DIR / 'data/parquet/'
 
-OUTPUT_PARTNERS  = ROOT_DIR / 'data/parquet/partners.parquet'
-OUTPUT_COMPANIES = ROOT_DIR / 'data/parquet/companies.parquet'
-OUTPUT_BUSINESS  = ROOT_DIR / 'data/parquet/business.parquet'
+OUTPUT_PARTNERS  = PARQUET_DIR / 'partners.parquet'
+OUTPUT_COMPANIES = PARQUET_DIR / 'companies.parquet'
+OUTPUT_BUSINESS  = PARQUET_DIR / 'business.parquet'
 
 
-OUTPUT_PARTNERS.parent.mkdir(parents=True, exist_ok=True)
-OUTPUT_BUSINESS.parent.mkdir(parents=True, exist_ok=True)
+PARQUET_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ==========================================================================
