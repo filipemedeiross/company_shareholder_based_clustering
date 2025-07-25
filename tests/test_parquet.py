@@ -14,7 +14,7 @@ class TestParquet(unittest.TestCase):
     BUSINESS_PARQUET = ROOT_DIR / 'data/parquet/business.parquet'
 
 
-    def get_sample_from_parquet(self, filename, n=10):
+    def get_sample_from_parquet(self, filename, n=3):
         samples = []
 
         with open(filename, mode='rb') as f:
@@ -64,13 +64,13 @@ class TestParquet(unittest.TestCase):
 
 
     def find_row_business(
-        self        ,
-        files       ,
-        cols        ,
-        cnpj_col    ,
-        closing_col ,
-        opening_col ,
-        target      ,
+        self     ,
+        files    ,
+        cols     ,
+        cnpj_col ,
+        order_col,
+        dv_col   ,
+        target   ,
     ):
         for csv_path in files:
             with open(csv_path, encoding="latin-1", newline='') as f:
@@ -78,9 +78,9 @@ class TestParquet(unittest.TestCase):
 
                 for row in reader:
                     if (
-                        int(row[cnpj_col    ]) == target.cnpj         and
-                        int(row[closing_col ]) == target.closing_date and
-                        int(row[opening_col ]) == target.opening_date
+                        int(row[cnpj_col ]) == target.cnpj       and
+                        int(row[order_col]) == target.cnpj_order and
+                        int(row[dv_col   ]) == target.cnpj_dv
                     ):
                         return [row[idx] for idx in cols]
 
@@ -124,10 +124,10 @@ class TestParquet(unittest.TestCase):
 
 
     def test_business_parquet_contains_csv_data(self):
-        CNPJ_COL    =  0
-        CLOSING_COL =  6
-        OPENING_COL = 10
-        ESTABELECIMENTOS_COLS = [0, 4, 6, 10, 18]
+        BASIC_COL = 0
+        ORDER_COL = 1
+        DV_COL    = 2
+        ESTABELECIMENTOS_COLS = [0, 1, 2, 3, 4, 6, 10, 18]
 
         ESTABELECIMENTOS_PATH = [
             self.ROOT_DIR / f'data/csv/estabelecimentos/estabelecimentos{i}.csv'
@@ -140,15 +140,18 @@ class TestParquet(unittest.TestCase):
             found = self.find_row_business(
                 ESTABELECIMENTOS_PATH,
                 ESTABELECIMENTOS_COLS,
-                CNPJ_COL             ,
-                CLOSING_COL          ,
-                OPENING_COL          ,
+                BASIC_COL            ,
+                ORDER_COL            ,
+                DV_COL               ,
                 row                  ,
             )
 
-            cnpj, trade_name, closing, opening, cep = row
+            cnpj, order, dv, branch, trade_name, closing, opening, cep = row
             with self.subTest(
                 cnpj=cnpj      ,
+                order=order    ,
+                dv=dv          ,
+                branch=branch  ,
                 name=trade_name,
                 start=opening  ,
                 end=closing    ,
@@ -157,8 +160,10 @@ class TestParquet(unittest.TestCase):
                 if found:
                     print(
                         f"✅ Found match:\n"
-                        f"Parquet:     {cnpj}, {trade_name or ''}, {closing}, {opening}, {cep}\n"
-                        f"CSV Match:   {found[0]}, {found[1]}, {found[2]}, {found[3]}, {found[4]}"
+                        f"Parquet:     {cnpj}, {order}, {dv}, "
+                        f"{int(branch)}, {trade_name or ''}, {closing}, {opening}, {cep}\n"
+                        f"CSV Match:   {int(found[0])}, {int(found[1])}, {found[2]}, "
+                        f"{found[3]}, {found[4]}, {found[5]}, {found[6]}, {found[7]}"
                     )
                 else:
                     self.fail(
