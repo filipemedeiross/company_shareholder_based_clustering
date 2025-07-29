@@ -188,40 +188,38 @@ else:
 # ==============================================================
 print('Rewriting parquet files with pyarrow compression...')
 
-if not OUTPUT_PARTNERS.exists():
-    partners = pd.read_parquet(OUTPUT_PARTNERS)
+partners = pd.read_parquet(OUTPUT_PARTNERS)
 
-    partners.sort_values(
-        by=[
-            'start_date'  ,
-            'name_partner',
-        ],
-        inplace=True,
-    )
-    partners.to_parquet(
-        OUTPUT_PARTNERS ,
-        engine='pyarrow',
-        index=False     ,
-    )
+partners.sort_values(
+    by=[
+        'start_date'  ,
+        'name_partner',
+    ],
+    inplace=True,
+)
+partners.to_parquet(
+    OUTPUT_PARTNERS ,
+    engine='pyarrow',
+    index=False     ,
+)
 
-    del partners
+del partners
 
 
-if not OUTPUT_BUSINESS.exists():
-    business = pd.read_parquet(OUTPUT_BUSINESS)
+business = pd.read_parquet(OUTPUT_BUSINESS)
 
-    business.sort_values(
-        by=[
-            'closing_date',
-            'opening_date',
-            'cep'         ,
-        ],
-        inplace=True,
-    )
-    business.to_parquet(
-        OUTPUT_BUSINESS ,
-        engine='pyarrow',
-        index=False     ,
-    )
+business.sort_values(
+    by=[
+        'closing_date',
+        'opening_date',
+        'cep'         ,
+    ],
+    inplace=True,
+)
+business.to_parquet(
+    OUTPUT_BUSINESS ,
+    engine='pyarrow',
+    index=False     ,
+)
 
-    del business
+del business
