@@ -1,13 +1,9 @@
 import time
 import sqlite3
-
-import pandas as pd
 import pyarrow.parquet as pq
 
 from pathlib import Path
 
-
-BATCH_SIZE = 300000
 
 ROOT_DIR     = Path(__file__).resolve().parent.parent
 PARQUET_DIR  = ROOT_DIR / 'data/parquet'
@@ -20,14 +16,32 @@ PARQUET_BUSINESS  = PARQUET_DIR / 'business.parquet'
 SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
-def pad_zero(number, width):
-    return str(number).zfill(width)
+def insert_parquet(
+    table_name  ,
+    parquet_file,
+    fn=None     ,
+):
+    print()
+    print(f"📥 Loading and inserting data into '{table_name}' from Parquet (by row group)...")
 
-def int_to_date(value):
-    try:
-        return pd.to_datetime(str(value), format='%Y%m%d').date()
-    except:
-        return None
+    table = pq.ParquetFile(parquet_file)
+    for i in range(table.num_row_groups):
+        print(f"  • Processing row_group {i + 1}...")
+
+        df = table.read_row_group(i).to_pandas()
+        if fn:
+            df = fn(df)
+
+        df.to_sql(
+            table_name        ,
+            conn              ,
+            index=False       ,
+            if_exists='append',
+        )
+        del df
+
+def transform_business(df):
+    return df.branch.astype(bool)
 
 def measure_query_time(cursor, query, label):
     start = time.perf_counter()
@@ -37,25 +51,27 @@ def measure_query_time(cursor, query, label):
     print(f"⏱️ Query time for {label}: {end - start:.2f} seconds")
 
 
-# ===================================
-# 🔌 SQLite connection + table setup
-# ===================================
+# ==========================
+# 🔌 SQLite setup and tables
+# ==========================
+print("🔌 Connecting to SQLite database and creating tables...")
+
 conn   = sqlite3.connect(SQLITE_PATH)
 cursor = conn.cursor()
 
 cursor.execute('DROP TABLE IF EXISTS partners')
 cursor.execute('''
     CREATE TABLE partners (
-        cnpj TEXT,
+        cnpj INTEGER,
         name_partner TEXT,
-        start_date DATE
+        start_date INTEGER
     )
 ''')
 
 cursor.execute('DROP TABLE IF EXISTS companies')
 cursor.execute('''
     CREATE TABLE companies (
-        cnpj TEXT,
+        cnpj INTEGER,
         corporate_name TEXT,
         capital REAL
     )
@@ -64,52 +80,31 @@ cursor.execute('''
 cursor.execute('DROP TABLE IF EXISTS business')
 cursor.execute('''
     CREATE TABLE business (
-        cnpj TEXT,
-        cnpj_order TEXT,
-        cnpj_dv TEXT,
+        cnpj INTEGER,
+        cnpj_order INTEGER,
+        cnpj_dv INTEGER,
         branch BOOLEAN,
         trade_name TEXT,
-        closing_date DATE,
-        opening_date DATE,
-        cep TEXT
+        closing_date INTEGER,
+        opening_date INTEGER,
+        cep INTEGER
     )
 ''')
 
 conn.commit()
 
-# ===================================
-# 📥 Load, transform and insert data
-# ===================================
-df = pd.read_parquet(PARQUET_PARTNERS)
-df.cnpj       = df.cnpj.apply(lambda x: pad_zero(x, 8))
-df.start_date = df.start_date.apply(int_to_date)
-df.to_sql('partners', conn, index=False, if_exists='append')
-
-
-df = pd.read_parquet(PARQUET_COMPANIES)
-df.cnpj = df.cnpj.apply(lambda x: pad_zero(x, 8))
-df.to_sql('companies', conn, index=False, if_exists='append')
-
-
-table = pq.ParquetFile(PARQUET_BUSINESS)
-for batch in table.iter_batches(batch_size=BATCH_SIZE):
-    df = batch.to_pandas()
-
-    df.cnpj       = df.cnpj.apply      (lambda x: pad_zero(x, 8))
-    df.cnpj_order = df.cnpj_order.apply(lambda x: pad_zero(x, 4))
-    df.cnpj_dv    = df.cnpj_dv.apply   (lambda x: pad_zero(x, 2))
-    df.cep        = df.cep.apply       (lambda x: pad_zero(x, 8))
-    df.branch     = df.branch.astype(bool)
-    df.opening_date = df.opening_date.apply(int_to_date)
-    df.closing_date = df.closing_date.apply(int_to_date)
-
-    df.to_sql('business', conn, index=False, if_exists='append')
+# ===========================
+# 🚀 Load and insert all data
+# ===========================
+insert_parquet('partners' , PARQUET_PARTNERS )
+insert_parquet('companies', PARQUET_COMPANIES)
+insert_parquet('business' , PARQUET_BUSINESS, fn=transform_business)
 
 conn.commit()
 
-# ======================================
-# ⏱️ Measure query time BEFORE indexing
-# ======================================
+# ==========================
+# 🔍 Measure before indexing
+# ==========================
 print()
 print("🔍 Measuring query performance before indexing...")
 print()
@@ -129,9 +124,9 @@ measure_query_time(cursor,
     "business.trade_name (before index)"
 )
 
-# ==========================
-# 📌 Create regular indexes
-# ==========================
+# =================
+# 📌 Create indexes
+# =================
 print()
 print("⚙️ Creating indexes...")
 print()
@@ -142,9 +137,9 @@ cursor.execute('CREATE INDEX IF NOT EXISTS idx_business_trade_name ON business(t
 
 conn.commit()
 
-# =====================================
-# ⏱️ Measure query time AFTER indexing
-# =====================================
+# =========================
+# ✅ Measure after indexing
+# =========================
 print()
 print("✅ Measuring query performance after indexing...")
 print()
@@ -164,8 +159,10 @@ measure_query_time(cursor,
     "business.trade_name (after index)"
 )
 
-
+# ===========
+# 🧹 Finalize
+# ===========
 conn.close()
 
 print()
-print(f"✅ SQLite database created at: {SQLITE_PATH}")
+print(f"✅ SQLite database successfully created at: {SQLITE_PATH}")
