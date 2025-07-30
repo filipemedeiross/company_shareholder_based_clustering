@@ -38,10 +38,12 @@ def insert_parquet(
             index=False       ,
             if_exists='append',
         )
+
         del df
 
 def transform_business(df):
-    return df.branch.astype(bool)
+    df.branch = df.branch.astype(bool)
+    return df
 
 def measure_query_time(cursor, query, label):
     start = time.perf_counter()
@@ -87,7 +89,8 @@ cursor.execute('''
         trade_name TEXT,
         closing_date INTEGER,
         opening_date INTEGER,
-        cep INTEGER
+        cep INTEGER,
+        PRIMARY KEY (cnpj, cnpj_order, cnpj_dv)
     )
 ''')
 
@@ -109,54 +112,60 @@ print()
 print("🔍 Measuring query performance before indexing...")
 print()
 
-measure_query_time(cursor,
-    "SELECT * FROM partners WHERE name_partner LIKE 'JOÃO%'",
+measure_query_time(
+    cursor,
+    '''SELECT name_partner
+       FROM partners
+       WHERE name_partner LIKE 'João%' ''',
     "partners.name_partner (before index)"
 )
 
-measure_query_time(cursor,
-    "SELECT * FROM companies WHERE corporate_name LIKE 'SUPERMERCADO%'",
-    "companies.corporate_name (before index)"
-)
-
-measure_query_time(cursor,
-    "SELECT * FROM business WHERE trade_name LIKE 'PADARIA%'",
+measure_query_time(
+    cursor,
+    '''SELECT trade_name
+       FROM business
+       WHERE trade_name LIKE 'Padaria%' ''',
     "business.trade_name (before index)"
 )
 
-# =================
-# 📌 Create indexes
-# =================
+# =============================
+# 📌 Create FTS5 virtual tables
+# =============================
 print()
-print("⚙️ Creating indexes...")
+print("⚙️ Creating FTS5 virtual tables for text search...")
 print()
 
-cursor.execute('CREATE INDEX IF NOT EXISTS idx_partners_name_partner ON partners(name_partner)')
-cursor.execute('CREATE INDEX IF NOT EXISTS idx_companies_corporate_name ON companies(corporate_name)')
-cursor.execute('CREATE INDEX IF NOT EXISTS idx_business_trade_name ON business(trade_name)')
+cursor.execute('DROP TABLE IF EXISTS partners_fts')
+cursor.execute('CREATE VIRTUAL TABLE partners_fts USING fts5(name_partner, content="partners", content_rowid="rowid")')
+cursor.execute('INSERT INTO partners_fts(rowid, name_partner) SELECT rowid, name_partner FROM partners')
+
+cursor.execute('DROP TABLE IF EXISTS business_fts')
+cursor.execute('CREATE VIRTUAL TABLE business_fts USING fts5(trade_name, content="business", content_rowid="rowid")')
+cursor.execute('INSERT INTO business_fts(rowid, trade_name) SELECT rowid, trade_name FROM business')
 
 conn.commit()
 
-# =========================
-# ✅ Measure after indexing
-# =========================
+# =======================================
+# ✅ Measure performance using FTS5 MATCH
+# =======================================
 print()
-print("✅ Measuring query performance after indexing...")
+print("✅ Measuring query performance using FTS5 indexes...")
 print()
 
-measure_query_time(cursor,
-    "SELECT * FROM partners WHERE name_partner LIKE 'JOÃO%'",
-    "partners.name_partner (after index)"
+measure_query_time(
+    cursor,
+    '''SELECT name_partner
+       FROM partners_fts
+       WHERE partners_fts MATCH 'João*' ''',
+    "partners.name_partner (FTS5)"
 )
 
-measure_query_time(cursor,
-    "SELECT * FROM companies WHERE corporate_name LIKE 'SUPERMERCADO%'",
-    "companies.corporate_name (after index)"
-)
-
-measure_query_time(cursor,
-    "SELECT * FROM business WHERE trade_name LIKE 'PADARIA%'",
-    "business.trade_name (after index)"
+measure_query_time(
+    cursor,
+    '''SELECT trade_name
+       FROM business_fts
+       WHERE business_fts MATCH 'Padaria*' ''',
+    "business.trade_name (FTS5)"
 )
 
 # ===========
