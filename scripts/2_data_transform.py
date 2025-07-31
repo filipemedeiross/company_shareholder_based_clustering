@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 
 
-CHUNKSIZE = 3000000
+CHUNKSIZE = 8000000
 
 COLS_PARTNERS  = [
     0, 2, 5
@@ -115,6 +115,14 @@ if not OUTPUT_COMPANIES.exists():
                 .astype('int64')
             )
 
+            chunk.sort_values(
+                by=[
+                    'capital',
+                    'cnpj'   ,
+                ],
+                inplace=True,
+            )
+
             chunk.to_parquet(
                 OUTPUT_COMPANIES                ,
                 engine='fastparquet'            ,
@@ -206,21 +214,6 @@ partners.to_parquet(
 )
 
 del partners
-
-
-companies = pd.read_parquet(OUTPUT_COMPANIES)
-
-companies.sort_values(
-    by='capital',
-    inplace=True,
-)
-companies.to_parquet(
-    OUTPUT_COMPANIES,
-    engine='pyarrow',
-    index=False     ,
-)
-
-del companies
 
 
 business = pd.read_parquet(OUTPUT_BUSINESS)
