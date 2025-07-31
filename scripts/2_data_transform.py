@@ -66,7 +66,9 @@ if not OUTPUT_PARTNERS.exists():
             encoding='latin-1'   ,
             on_bad_lines='skip'  ,
         )
+
         df.dropna()
+        df = df[df.name_partner.str.len() > 2]
 
         df.cnpj       = df.cnpj.astype('int32')
         df.start_date = df.start_date.astype('int32')
@@ -108,9 +110,9 @@ if not OUTPUT_COMPANIES.exists():
             chunk.cnpj    = chunk.cnpj.astype('int32')
             chunk.capital = (
                 chunk.capital
-                .str.replace('.',  '', regex=False)
-                .str.replace(',', '.', regex=False)
-                .astype(float)
+                .str
+                .replace(r',.*', '', regex=True)
+                .astype('int64')
             )
 
             chunk.to_parquet(
@@ -204,6 +206,21 @@ partners.to_parquet(
 )
 
 del partners
+
+
+companies = pd.read_parquet(OUTPUT_COMPANIES)
+
+companies.sort_values(
+    by='capital',
+    inplace=True,
+)
+companies.to_parquet(
+    OUTPUT_COMPANIES,
+    engine='pyarrow',
+    index=False     ,
+)
+
+del companies
 
 
 business = pd.read_parquet(OUTPUT_BUSINESS)
