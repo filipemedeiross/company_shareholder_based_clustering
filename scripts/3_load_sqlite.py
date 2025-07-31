@@ -19,7 +19,6 @@ SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
 def insert_parquet(
     table_name     ,
     parquet_file   ,
-    fn=None        ,
     duplicates=None,
 ):
     print()
@@ -33,9 +32,6 @@ def insert_parquet(
         print(f"  • Processing row_group {i + 1}...")
 
         df = table.read_row_group(i).to_pandas()
-
-        if fn:
-            df = fn(df)
 
         if duplicates:
             df = df.drop_duplicates(
@@ -54,10 +50,6 @@ def insert_parquet(
         )
 
         del df
-
-def transform_business(df):
-    df.branch = df.branch.astype(bool)
-    return df
 
 def measure_query_time(cursor, query, label):
     start = time.perf_counter()
@@ -113,9 +105,9 @@ conn.commit()
 # ===========================
 # 🚀 Load and insert all data
 # ===========================
-insert_parquet('partners' , PARQUET_PARTNERS )
+insert_parquet('partners' , PARQUET_PARTNERS)
 insert_parquet('companies', PARQUET_COMPANIES, duplicates='cnpj')
-insert_parquet('business' , PARQUET_BUSINESS , fn=transform_business)
+insert_parquet('business' , PARQUET_BUSINESS)
 
 conn.commit()
 
