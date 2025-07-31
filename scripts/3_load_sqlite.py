@@ -17,20 +17,34 @@ SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
 def insert_parquet(
-    table_name  ,
-    parquet_file,
-    fn=None     ,
+    table_name     ,
+    parquet_file   ,
+    fn=None        ,
+    duplicates=None,
 ):
     print()
     print(f"📥 Loading and inserting data into '{table_name}' from Parquet (by row group)...")
+
+    if duplicates:
+        seen = set()
 
     table = pq.ParquetFile(parquet_file)
     for i in range(table.num_row_groups):
         print(f"  • Processing row_group {i + 1}...")
 
         df = table.read_row_group(i).to_pandas()
+
         if fn:
             df = fn(df)
+
+        if duplicates:
+            df = df.drop_duplicates(
+                subset=duplicates,
+                keep='first'     ,
+            )
+            df = df[~df[duplicates].isin(seen)]
+
+            seen.update(df[duplicates])
 
         df.to_sql(
             table_name        ,
@@ -73,7 +87,7 @@ cursor.execute('''
 cursor.execute('DROP TABLE IF EXISTS companies')
 cursor.execute('''
     CREATE TABLE companies (
-        cnpj INTEGER,
+        cnpj INTEGER PRIMARY KEY,
         corporate_name TEXT,
         capital REAL
     )
@@ -100,8 +114,8 @@ conn.commit()
 # 🚀 Load and insert all data
 # ===========================
 insert_parquet('partners' , PARQUET_PARTNERS )
-insert_parquet('companies', PARQUET_COMPANIES)
-insert_parquet('business' , PARQUET_BUSINESS, fn=transform_business)
+insert_parquet('companies', PARQUET_COMPANIES, duplicates='cnpj')
+insert_parquet('business' , PARQUET_BUSINESS , fn=transform_business)
 
 conn.commit()
 
