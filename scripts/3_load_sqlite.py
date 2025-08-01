@@ -81,7 +81,7 @@ cursor.execute('''
     CREATE TABLE companies (
         cnpj INTEGER PRIMARY KEY,
         corporate_name TEXT,
-        capital REAL
+        capital INTEGER
     )
 ''')
 
