@@ -25,6 +25,8 @@ data/
         business.parquet
         companies.parquet
         partners.parquet
+    sqlite/
+        rfb.db
 ```
 
 ### 📥 DATA INGESTION
@@ -59,3 +61,20 @@ After downloading and extracting the raw CSV files, you can transform the data i
 >```bash
 >python -m unittest tests.test_parquet.py
 >```
+
+### 🗃️ SQLITE DATABASE
+
+Run `scripts/3_create_sqlite.py` to create a local SQLite database by loading the Parquet files into three structured tables:
+
+- `partners (cnpj, name_partner, start_date)`
+- `companies(cnpj, corporate_name, capital)`
+- `business (cnpj, cnpj_order, cnpj_dv, branch, trade_name, closing_date, opening_date, cep)`
+
+After execution, you’ll have a lightweight SQLite database at `data/sqlite/rfb.db`, offering enhanced performance for prototyping, searching, and exploratory analysis. The data is inserted efficiently by processing each row group individually, and duplicate entries in the `companies` table are removed based on the `cnpj` field.
+
+To enhance query performance on textual columns (`name_partner` and `trade_name`), the script also creates **FTS5 virtual tables**:
+
+- `partners_fts(name_partner)`
+- `business_fts(trade_name)`
+
+These indexes enable fast full-text searches using the `MATCH` operator, which is significantly faster than traditional `LIKE` queries.
