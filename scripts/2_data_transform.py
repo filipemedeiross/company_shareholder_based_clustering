@@ -43,9 +43,7 @@ OUTPUT_PARTNERS  = PARQUET_DIR / 'partners.parquet'
 OUTPUT_COMPANIES = PARQUET_DIR / 'companies.parquet'
 OUTPUT_BUSINESS  = PARQUET_DIR / 'business.parquet'
 
-
 PARQUET_DIR.mkdir(parents=True, exist_ok=True)
-
 
 # ==========================================================================
 # PART 1 - Generate initial partners.parquet incrementally using fastparquet
@@ -83,9 +81,25 @@ if not OUTPUT_PARTNERS.exists():
         first_write_partners = False
 
         del df
+
+    partners = pd.read_parquet(OUTPUT_PARTNERS)
+
+    partners.sort_values(
+        by=[
+            'start_date'  ,
+            'name_partner',
+        ],
+        inplace=True,
+    )
+    partners.to_parquet(
+        OUTPUT_PARTNERS ,
+        engine='pyarrow',
+        index=False     ,
+    )
+
+    del partners
 else:
     print('Skipping partners.parquet — already exists.')
-
 
 # ===========================================================================
 # PART 2 - Generate initial companies.parquet incrementally using fastparquet
@@ -136,7 +150,6 @@ if not OUTPUT_COMPANIES.exists():
 else:
     print('Skipping companies.parquet — already exists.')
 
-
 # ==========================================================================
 # PART 3 - Generate initial business.parquet incrementally using fastparquet
 # ==========================================================================
@@ -168,7 +181,7 @@ if not OUTPUT_BUSINESS.exists():
                 chunk.cep
                 .fillna('0')
                 .astype(str)
-                .str.replace('-', '', regex=True)
+                .str.replace('-', '')
                 .astype(float)
                 .astype('int32')
             )
@@ -189,47 +202,23 @@ if not OUTPUT_BUSINESS.exists():
             first_write_business = False
 
             del chunk
+
+    business = pd.read_parquet(OUTPUT_BUSINESS)
+
+    business.sort_values(
+        by=[
+            'closing_date',
+            'opening_date',
+            'cep'         ,
+        ],
+        inplace=True,
+    )
+    business.to_parquet(
+        OUTPUT_BUSINESS ,
+        engine='pyarrow',
+        index=False     ,
+    )
+
+    del business
 else:
     print('Skipping business.parquet — already exists.')
-
-
-# ==============================================================
-# PART 4 - Reload both files and rewrite with higher compression
-# ==============================================================
-print('Rewriting parquet files with pyarrow compression...')
-
-partners = pd.read_parquet(OUTPUT_PARTNERS)
-
-partners.sort_values(
-    by=[
-        'start_date'  ,
-        'name_partner',
-    ],
-    inplace=True,
-)
-partners.to_parquet(
-    OUTPUT_PARTNERS ,
-    engine='pyarrow',
-    index=False     ,
-)
-
-del partners
-
-
-business = pd.read_parquet(OUTPUT_BUSINESS)
-
-business.sort_values(
-    by=[
-        'closing_date',
-        'opening_date',
-        'cep'         ,
-    ],
-    inplace=True,
-)
-business.to_parquet(
-    OUTPUT_BUSINESS ,
-    engine='pyarrow',
-    index=False     ,
-)
-
-del business
