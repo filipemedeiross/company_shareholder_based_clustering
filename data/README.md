@@ -78,3 +78,15 @@ To enhance query performance on textual columns (`name_partner` and `trade_name`
 - `business_fts(trade_name)`
 
 These indexes enable fast full-text searches using the `MATCH` operator, which is significantly faster than traditional `LIKE` queries.
+
+> ✅ **Note**: You can validate the integrity and performance of the SQLite database using:
+>
+>```bash
+>python -m unittest tests.test_sqlite
+>```
+>
+> The test suite includes:
+>
+> - 🔍 Existence checks: Ensures entries from the Parquet files exist in the partners, companies, and business tables.
+> - 🔎 FTS5 validation: Confirms prefix-based matches using full-text search on name_partner and trade_name.
+> - ⏱️ Performance comparison: Benchmarks LIKE vs FTS5 MATCH to demonstrate the efficiency of full-text indexing.
