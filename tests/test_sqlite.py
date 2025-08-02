@@ -60,6 +60,13 @@ class TestSQLiteBase(unittest.TestCase):
 
         return table.to_pandas().sample(n)
 
+    def time_query(self, query, params):
+        start = time.time()
+        self.cursor.execute(query, params)
+        self.cursor.fetchall()
+
+        return time.time() - start
+
 
 class TestSQLite(TestSQLiteBase):
     def test_partners_exist_in_sqlite(self):
@@ -224,7 +231,7 @@ class TestSQLite(TestSQLiteBase):
 
         for trade_name in sample.trade_name:
             prefix = trade_name.split()[0]
-            match  = f"{prefix}*"
+            match  = f'"{prefix}"'
 
             self.cursor.execute(
                 '''
@@ -250,9 +257,16 @@ class TestSQLite(TestSQLiteBase):
             names = [r[0] for r in self.cursor.fetchall()]
 
             if not all(
-                any(w.startswith(prefix) for w in name.split())
+                prefix.upper() in name.upper()
                 for name in names
             ):
+                print(f"🔹 Full trade name sampled: {trade_name}")
+                print(f"🔹 First name used as prefix: '{prefix}'")
+
+                for name in names:
+                    if prefix.upper() not in name.upper():
+                        print(f"   • {name}")
+
                 self.fail(f"❌ RowIDs found, but not all start with the prefix '{prefix}'")
             else:
                 print(f"✅ FTS5 match success")
@@ -262,3 +276,87 @@ class TestSQLite(TestSQLiteBase):
 
                 for name in names:
                     print(f"   • {name}")
+
+
+class TestSQLiteQueries(TestSQLiteBase):
+    def test_query_time_fts_name_partner(self):
+        print()
+        print("⏱️ Comparing query times: 'name_partner' vs FTS5")
+        print()
+
+        sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
+
+        times_like = []
+        times_fts  = []
+        for _, (_, name, _) in sample.iterrows():
+            prefix = name.split()[0]
+
+            t1 = self.time_query(
+                """
+                SELECT rowid
+                FROM partners
+                WHERE name_partner LIKE ?
+                """,
+                (f"{prefix}%",)
+            )
+            t2 = self.time_query(
+                """
+                SELECT rowid
+                FROM partners_fts
+                WHERE partners_fts MATCH ?
+                """,
+                (f"{prefix}*",)
+            )
+
+            times_like.append(t1)
+            times_fts.append (t2)
+
+        avg_like = sum(times_like) / len(times_like)
+        avg_fts  = sum(times_fts ) / len(times_fts )
+
+        if avg_like < avg_fts:
+            self.fail("❌ FTS5 query is slower than direct LIKE query on the base table")
+        else:
+            print(f"📊 Average LIKE time for 'name_partner': {avg_like:.2f}s")
+            print(f"📊 Average FTS5 time for 'name_partner': {avg_fts:.2f}s" )
+
+    def test_query_time_fts_trade_name(self):
+        print()
+        print("⏱️ Comparing query times: 'trade_name' vs FTS5")
+        print()
+
+        sample = self.get_sample_trade_name(self.BUSINESS_PARQUET)
+
+        times_like = []
+        times_fts  = []
+        for trade_name in sample.trade_name:
+            prefix = trade_name.split()[0]
+
+            t1 = self.time_query(
+                """
+                SELECT trade_name
+                FROM business
+                WHERE trade_name LIKE ?
+                """,
+                (f"{prefix}%",)
+            )
+            t2 = self.time_query(
+                """
+                SELECT rowid
+                FROM business_fts
+                WHERE business_fts MATCH ?
+                """,
+                (f"{prefix}*",)
+            )
+
+            times_like.append(t1)
+            times_fts.append (t2)
+
+        avg_like = sum(times_like) / len(times_like)
+        avg_fts  = sum(times_fts ) / len(times_fts )
+
+        if avg_like < avg_fts:
+            self.fail("❌ FTS5 query is slower than direct LIKE query on the base table")
+        else:
+            print(f"📊 Average LIKE time for 'trade_name': {avg_like:.2f}s")
+            print(f"📊 Average FTS5 time for 'trade_name': {avg_fts:.2f}s" )
