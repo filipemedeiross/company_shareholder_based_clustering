@@ -1,3 +1,4 @@
+import time
 import random
 import sqlite3
 import unittest
@@ -7,7 +8,7 @@ from pathlib import Path
 from fastparquet import ParquetFile
 
 
-class TestSQLite(unittest.TestCase):
+class TestSQLiteBase(unittest.TestCase):
     ROOT_DIR = Path(__file__).resolve().parent.parent
     DATA_DIR = ROOT_DIR / 'data'
 
@@ -50,6 +51,8 @@ class TestSQLite(unittest.TestCase):
 
         return pd.concat(samples, ignore_index=True)
 
+
+class TestSQLite(TestSQLiteBase):
     def test_partners_exist_in_sqlite(self):
         print()
         print("▶️ Starting test: test_partners_exist_in_sqlite")
@@ -127,39 +130,30 @@ class TestSQLite(unittest.TestCase):
 
         sample = self.get_sample_from_parquet(self.BUSINESS_PARQUET)
 
-        for _, (
-            cnpj        ,
-            cnpj_order  ,
-            cnpj_dv     ,
-            branch      ,
-            trade_name  ,
-            closing_date,
-            opening_date,
-            cep         ,
-        ) in sample.iterrows():
-            with self.subTest(cnpj=cnpj, order=cnpj_order, dv=cnpj_dv):
+        for _, (cnpj, order, dv, *_) in sample.iterrows():
+            with self.subTest(cnpj=cnpj, order=order, dv=dv):
                 self.cursor.execute(
                     '''
                     SELECT * FROM business
                     WHERE cnpj = ? AND cnpj_order = ? AND cnpj_dv = ?
                     ''',
-                    (cnpj, cnpj_order, cnpj_dv)
+                    (cnpj, order, dv)
                 )
                 results = self.cursor.fetchall()
 
                 if not results:
                     self.fail(
-                        f"❌ Entry not found in 'business' for CNPJ {cnpj}, order {cnpj_order}, dv {cnpj_dv}"
+                        f"❌ Entry not found in 'business' for CNPJ {cnpj}, order {order}, dv {dv}"
                     )
                 elif len(results) > 1:
                     self.fail(
-                        f"❌ More than one match found in 'business' for CNPJ {cnpj}, order {cnpj_order}, dv {cnpj_dv}"
+                        f"❌ More than one match found in 'business' for CNPJ {cnpj}, order {order}, dv {dv}"
                     )
                 else:
                     result = results[0]
 
                     print(
                         f"✅ Found match:\n"
-                        f"Parquet:      {cnpj     }, {cnpj_order}, {cnpj_dv  }\n"
-                        f"SQLite Match: {result[0]}, {result[1] }, {result[2]}"
+                        f"Parquet:      {cnpj     }, {order    }, {dv       }\n"
+                        f"SQLite Match: {result[0]}, {result[1]}, {result[2]}"
                     )
