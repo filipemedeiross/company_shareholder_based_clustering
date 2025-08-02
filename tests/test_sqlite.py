@@ -2,7 +2,10 @@ import time
 import random
 import sqlite3
 import unittest
+
 import pandas as pd
+import pyarrow.parquet as pq
+import pyarrow.compute as pc
 
 from pathlib import Path
 from fastparquet import ParquetFile
@@ -50,6 +53,12 @@ class TestSQLiteBase(unittest.TestCase):
                     break
 
         return pd.concat(samples, ignore_index=True)
+
+    def get_sample_trade_name(self, filename, n=3):
+        table = pq.read_table(filename, columns=['trade_name'])
+        table = table.filter(pc.field('trade_name').is_valid())
+
+        return table.to_pandas().sample(n)
 
 
 class TestSQLite(TestSQLiteBase):
@@ -157,3 +166,99 @@ class TestSQLite(TestSQLiteBase):
                         f"Parquet:      {cnpj     }, {order    }, {dv       }\n"
                         f"SQLite Match: {result[0]}, {result[1]}, {result[2]}"
                     )
+
+    def test_fts_name_partner(self):
+        print()
+        print("🔎 Testing FTS5 on 'partners_fts.name_partner'")
+        print()
+
+        sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
+
+        for _, (_, name, _) in sample.iterrows():
+            prefix = name.split()[0]
+            match  = f"{prefix}*"
+
+            self.cursor.execute(
+                '''
+                SELECT rowid FROM partners_fts
+                WHERE partners_fts MATCH ?
+                ORDER BY RANDOM()
+                LIMIT 10
+                ''',
+                (match,)
+            )
+            rowids = [r[0] for r in self.cursor.fetchall()]
+
+            if not rowids:
+                self.fail(f"❌ No FTS match found for prefix '{match}'")
+
+            self.cursor.execute(
+                f'''
+                SELECT name_partner FROM partners
+                WHERE rowid IN ({','.join(['?'] * len(rowids))})
+                ''',
+                rowids
+            )
+            names = [r[0] for r in self.cursor.fetchall()]
+
+            if not all(
+                any(w.startswith(prefix) for w in name.split())
+                for name in names
+            ):
+                self.fail(f"❌ RowIDs found, but not all start with the prefix '{prefix}'")
+            else:
+                print(f"✅ FTS5 match success")
+                print(f"🔹 Full name sampled: {name}")
+                print(f"🔹 First name used as prefix: '{prefix}'")
+                print( "🔹 Matching names returned from SQLite:")
+
+                for name in names:
+                    print(f"   • {name}")
+
+    def test_fts_trade_name(self):
+        print()
+        print("🔎 Testing FTS5 on 'business_fts.trade_name'")
+        print()
+
+        sample = self.get_sample_trade_name(self.BUSINESS_PARQUET)
+
+        for trade_name in sample.trade_name:
+            prefix = trade_name.split()[0]
+            match  = f"{prefix}*"
+
+            self.cursor.execute(
+                '''
+                SELECT rowid FROM business_fts
+                WHERE business_fts MATCH ?
+                ORDER BY RANDOM()
+                LIMIT 10
+                ''',
+                (match,)
+            )
+            rowids = [r[0] for r in self.cursor.fetchall()]
+
+            if not rowids:
+                self.fail(f"❌ No FTS match found for prefix '{match}'")
+
+            self.cursor.execute(
+                f'''
+                SELECT trade_name FROM business
+                WHERE rowid IN ({','.join(['?'] * len(rowids))})
+                ''',
+                rowids
+            )
+            names = [r[0] for r in self.cursor.fetchall()]
+
+            if not all(
+                any(w.startswith(prefix) for w in name.split())
+                for name in names
+            ):
+                self.fail(f"❌ RowIDs found, but not all start with the prefix '{prefix}'")
+            else:
+                print(f"✅ FTS5 match success")
+                print(f"🔹 Full trade name sampled: {trade_name}")
+                print(f"🔹 First name used as prefix: '{prefix}'")
+                print( "🔹 Matching trade names returned from SQLite:")
+
+                for name in names:
+                    print(f"   • {name}")
