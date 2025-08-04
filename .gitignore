@@ -1,6 +1,7 @@
-# Ignoring data files
+# Ignoring data and docs files
 data/**
 !data/README.md
+docs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
