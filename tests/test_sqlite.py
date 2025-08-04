@@ -6,6 +6,7 @@ import unittest
 import pandas as pd
 import pyarrow.parquet as pq
 import pyarrow.compute as pc
+import matplotlib.pyplot as plt
 
 from pathlib import Path
 from fastparquet import ParquetFile
@@ -311,14 +312,14 @@ class TestSQLiteQueries(TestSQLiteBase):
             times_like.append(t1)
             times_fts.append (t2)
 
-        avg_like = sum(times_like) / len(times_like)
-        avg_fts  = sum(times_fts ) / len(times_fts )
+        self.avg_lp = sum(times_like) / len(times_like)
+        self.avg_fp = sum(times_fts ) / len(times_fts )
 
-        if avg_like < avg_fts:
+        if self.avg_lp < self.avg_fp:
             self.fail("❌ FTS5 query is slower than direct LIKE query on the base table")
         else:
-            print(f"📊 Average LIKE time for 'name_partner': {avg_like:.2f}s")
-            print(f"📊 Average FTS5 time for 'name_partner': {avg_fts:.2f}s" )
+            print(f"📊 Average LIKE time for 'name_partner': {self.avg_lp:.2f}s")
+            print(f"📊 Average FTS5 time for 'name_partner': {self.avg_fp:.2f}s")
 
     def test_query_time_fts_trade_name(self):
         print()
@@ -352,11 +353,54 @@ class TestSQLiteQueries(TestSQLiteBase):
             times_like.append(t1)
             times_fts.append (t2)
 
-        avg_like = sum(times_like) / len(times_like)
-        avg_fts  = sum(times_fts ) / len(times_fts )
+        self.avg_lt = sum(times_like) / len(times_like)
+        self.avg_ft = sum(times_fts ) / len(times_fts )
 
-        if avg_like < avg_fts:
+        if self.avg_lt < self.avg_ft:
             self.fail("❌ FTS5 query is slower than direct LIKE query on the base table")
         else:
-            print(f"📊 Average LIKE time for 'trade_name': {avg_like:.2f}s")
-            print(f"📊 Average FTS5 time for 'trade_name': {avg_fts:.2f}s" )
+            print(f"📊 Average LIKE time for 'trade_name': {self.avg_lt:.2f}s")
+            print(f"📊 Average FTS5 time for 'trade_name': {self.avg_ft:.2f}s")
+
+    def test_report_generate_fts5_vs_like_chart(self):
+        print()
+        print("📈 Generating FTS5 vs LIKE performance chart...")
+        print()
+
+        self.test_query_time_fts_name_partner()
+        self.test_query_time_fts_trade_name  ()
+
+        OUTPUT_PATH = self.ROOT_DIR / 'docs/tfs5'
+        OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+
+        labels = ['LIKE', 'FTS5']
+        partner_times = [self.avg_lp, self.avg_fp]
+        trade_times   = [self.avg_lt, self.avg_ft]
+        x = range(len(labels))
+
+        fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+        fig.suptitle("Query Time Comparison", fontsize=14)
+
+        axs[0].bar(
+            x                               ,
+            partner_times                   ,
+            color=['#FF9999', '#99CCFF'],
+        )
+        axs[0].set_title("partners.name_partner")
+        axs[0].set_ylabel("Average Time (s)")
+        axs[0].set_xticks(x)
+        axs[0].set_xticklabels(labels)
+
+        axs[1].bar(
+            x                               ,
+            trade_times                     ,
+            color=['#FF9999', '#99CCFF'],
+        )
+        axs[1].set_title("business.trade_name")
+        axs[1].set_xticks(x)
+        axs[1].set_xticklabels(labels)
+
+        plt.tight_layout()
+        plt.savefig(OUTPUT_PATH / 'fts5_vs_like.png')
+
+        print(f"✅ Chart saved at: {OUTPUT_PATH}")
