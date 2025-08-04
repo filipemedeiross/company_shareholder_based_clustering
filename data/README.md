@@ -77,7 +77,9 @@ To enhance query performance on textual columns (`name_partner` and `trade_name`
 - `partners_fts(name_partner)`
 - `business_fts(trade_name)`
 
-These indexes enable fast full-text searches using the `MATCH` operator, which is significantly faster than traditional `LIKE` queries.
+These indexes enable fast full-text searches using the `MATCH` operator, which significantly outperforms standard `LIKE` queries—especially for prefix-based searches. The chart below illustrates the performance difference between `LIKE` and `FTS5 MATCH` on the columns name_partner and trade_name:
+
+![FTS5 vs LIKE performance](https://github.com/filipemedeiross/company_shareholder_based_clustering/blob/main/docs/tfs5/fts5_vs_like.png?raw=true)
 
 > ✅ **Note**: You can validate the integrity and performance of the SQLite database using:
 >
