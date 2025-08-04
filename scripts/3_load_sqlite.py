@@ -67,14 +67,7 @@ print("🔌 Connecting to SQLite database and creating tables...")
 conn   = sqlite3.connect(SQLITE_PATH)
 cursor = conn.cursor()
 
-cursor.execute('DROP TABLE IF EXISTS partners')
-cursor.execute('''
-    CREATE TABLE partners (
-        cnpj INTEGER,
-        name_partner TEXT,
-        start_date INTEGER
-    )
-''')
+cursor.execute('PRAGMA foreign_keys = ON')
 
 cursor.execute('DROP TABLE IF EXISTS companies')
 cursor.execute('''
@@ -82,6 +75,16 @@ cursor.execute('''
         cnpj INTEGER PRIMARY KEY,
         corporate_name TEXT,
         capital INTEGER
+    )
+''')
+
+cursor.execute('DROP TABLE IF EXISTS partners')
+cursor.execute('''
+    CREATE TABLE partners (
+        cnpj INTEGER,
+        name_partner TEXT,
+        start_date INTEGER,
+        FOREIGN KEY (cnpj) REFERENCES companies(cnpj)
     )
 ''')
 
@@ -96,7 +99,8 @@ cursor.execute('''
         closing_date INTEGER,
         opening_date INTEGER,
         cep INTEGER,
-        PRIMARY KEY (cnpj, cnpj_order, cnpj_dv)
+        PRIMARY KEY (cnpj, cnpj_order, cnpj_dv),
+        FOREIGN KEY (cnpj) REFERENCES companies(cnpj)
     )
 ''')
 
@@ -105,8 +109,12 @@ conn.commit()
 # ===========================
 # 🚀 Load and insert all data
 # ===========================
+insert_parquet(
+    'companies'      ,
+    PARQUET_COMPANIES,
+    duplicates='cnpj',
+)
 insert_parquet('partners' , PARQUET_PARTNERS)
-insert_parquet('companies', PARQUET_COMPANIES, duplicates='cnpj')
 insert_parquet('business' , PARQUET_BUSINESS)
 
 conn.commit()
