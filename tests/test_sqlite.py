@@ -16,7 +16,7 @@ class TestSQLiteBase(unittest.TestCase):
     ROOT_DIR = Path(__file__).resolve().parent.parent
     DATA_DIR = ROOT_DIR / 'data'
 
-    SQLITE_DB         = DATA_DIR / 'sqlite/rfb.db'
+    SQLITE_DB         = DATA_DIR / 'sqlite/rfb.sqlite3'
     PARTNERS_PARQUET  = DATA_DIR / 'parquet/partners.parquet'
     COMPANIES_PARQUET = DATA_DIR / 'parquet/companies.parquet'
     BUSINESS_PARQUET  = DATA_DIR / 'parquet/business.parquet'
@@ -367,11 +367,17 @@ class TestSQLiteQueries(TestSQLiteBase):
         print("📈 Generating FTS5 vs LIKE performance chart...")
         print()
 
+        OUTPUT_PATH = self.ROOT_DIR / 'docs/tfs5'
+        OUTPUT_FILE = OUTPUT_PATH   / 'fts5_vs_like.png'
+
+        if OUTPUT_FILE.exists():
+            print(f"⚠️ Chart already exists at: {OUTPUT_FILE}, skipping generation.")
+            return
+
+        OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+
         self.test_query_time_fts_name_partner()
         self.test_query_time_fts_trade_name  ()
-
-        OUTPUT_PATH = self.ROOT_DIR / 'docs/tfs5'
-        OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
         labels = ['LIKE', 'FTS5']
         partner_times = [self.avg_lp, self.avg_fp]
@@ -401,6 +407,6 @@ class TestSQLiteQueries(TestSQLiteBase):
         axs[1].set_xticklabels(labels)
 
         plt.tight_layout()
-        plt.savefig(OUTPUT_PATH / 'fts5_vs_like.png')
+        plt.savefig(OUTPUT_FILE)
 
         print(f"✅ Chart saved at: {OUTPUT_PATH}")

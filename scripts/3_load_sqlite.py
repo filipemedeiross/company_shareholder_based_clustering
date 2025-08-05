@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT_DIR     = Path(__file__).resolve().parent.parent
 PARQUET_DIR  = ROOT_DIR / 'data/parquet'
-SQLITE_PATH  = ROOT_DIR / 'data/sqlite/rfb.db'
+SQLITE_PATH  = ROOT_DIR / 'data/sqlite/rfb.sqlite3'
 
 PARQUET_PARTNERS  = PARQUET_DIR / 'partners.parquet'
 PARQUET_COMPANIES = PARQUET_DIR / 'companies.parquet'
