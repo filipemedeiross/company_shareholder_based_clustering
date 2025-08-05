@@ -26,7 +26,7 @@ data/
         companies.parquet
         partners.parquet
     sqlite/
-        rfb.db
+        rfb.sqlite3
 ```
 
 ### 📥 DATA INGESTION
@@ -70,7 +70,7 @@ Run `scripts/3_create_sqlite.py` to create a local SQLite database by loading th
 - `companies(cnpj, corporate_name, capital)`
 - `business (cnpj, cnpj_order, cnpj_dv, branch, trade_name, closing_date, opening_date, cep)`
 
-After execution, you’ll have a lightweight SQLite database at `data/sqlite/rfb.db`, offering enhanced performance for prototyping, searching, and exploratory analysis. The data is inserted efficiently by processing each row group individually, and duplicate entries in the `companies` table are removed based on the `cnpj` field.
+After execution, you’ll have a lightweight SQLite database at `data/sqlite/rfb.sqlite3`, offering enhanced performance for prototyping, searching, and exploratory analysis. The data is inserted efficiently by processing each row group individually, and duplicate entries in the `companies` table are removed based on the `cnpj` field.
 
 To enhance query performance on textual columns (`name_partner` and `trade_name`), the script also creates **FTS5 virtual tables**:
 
