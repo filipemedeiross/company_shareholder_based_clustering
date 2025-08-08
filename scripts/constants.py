@@ -66,4 +66,4 @@ SORT_BUSINESS = [
     'cep'         ,
 ]
 
-CHUNKSIZE = 8_000_000
+CHUNKSIZE = 1_500_000
