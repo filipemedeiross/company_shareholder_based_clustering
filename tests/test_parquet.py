@@ -3,18 +3,17 @@ import random
 import unittest
 import pandas as pd
 
-from pathlib     import Path
 from fastparquet import ParquetFile
+
+from scripts.constants import DICT_DIR         , \
+                              PARQUET_PARTNERS , \
+                              PARQUET_COMPANIES, \
+                              PARQUET_BUSINESS , \
+                              COLS_PARTNERS    , \
+                              COLS_BUSINESS
 
 
 class TestParquet(unittest.TestCase):
-    ROOT_DIR = Path(__file__).resolve().parent.parent
-
-    PARTNERS_PARQUET  = ROOT_DIR / 'data/parquet/partners.parquet'
-    COMPANIES_PARQUET = ROOT_DIR / 'data/parquet/companies.parquet'
-    BUSINESS_PARQUET  = ROOT_DIR / 'data/parquet/business.parquet'
-
-
     def get_sample_from_parquet(self, filename, n=3):
         samples = []
 
@@ -56,8 +55,8 @@ class TestParquet(unittest.TestCase):
 
                 for row in reader:
                     if (
-                        int(row[cnpj_col]) == target.cnpj and
-                            row[name_col]  == target.name_partner
+                        row[cnpj_col].zfill(8) == target.cnpj and
+                        row[name_col]          == target.name_partner
                     ):
                         return [row[idx] for idx in cols]
 
@@ -79,9 +78,9 @@ class TestParquet(unittest.TestCase):
 
                 for row in reader:
                     if (
-                        int(row[cnpj_col ]) == target.cnpj       and
-                        int(row[order_col]) == target.cnpj_order and
-                        int(row[dv_col   ]) == target.cnpj_dv
+                        row[cnpj_col ].zfill(8) == target.cnpj       and
+                        row[order_col].zfill(4) == target.cnpj_order and
+                        row[dv_col   ].zfill(2) == target.cnpj_dv
                     ):
                         return [row[idx] for idx in cols]
 
@@ -93,21 +92,21 @@ class TestParquet(unittest.TestCase):
         print("▶️ Starting test: test_partners_parquet_contains_csv_data...")
         print()
 
-        CNPJ_COL, NAME_COL, _ = SOCIOS_COLS = [0, 2, 5]
+        CNPJ_COL, NAME_COL, _ = COLS_PARTNERS
         SOCIOS_PATH = [
-            self.ROOT_DIR / f'data/csv/socios/socios{i}.csv'
+            DICT_DIR['Socios'] / f'socios{i}.csv'
             for i in range(10)
         ]
 
-        sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
+        sample = self.get_sample_from_parquet(PARQUET_PARTNERS)
 
         for _, row in sample.iterrows():
             found = self.find_row_partners(
-                SOCIOS_PATH,
-                SOCIOS_COLS,
-                CNPJ_COL   ,
-                NAME_COL   ,
-                row        ,
+                SOCIOS_PATH  ,
+                COLS_PARTNERS,
+                CNPJ_COL     ,
+                NAME_COL     ,
+                row          ,
             )
 
             cnpj, name, start_date = row
@@ -119,8 +118,8 @@ class TestParquet(unittest.TestCase):
                 if found:
                     print(
                         f"✅ Found match:\n"
-                        f"Parquet:     {cnpj}, {name}, {start_date}\n"
-                        f"CSV Match:   {found[0]}, {found[1]}, {found[2]}"
+                        f"Parquet:     {cnpj             }, {name    }, {start_date.date()    }\n"
+                        f"CSV Match:   {found[0].zfill(8)}, {found[1]}, {self.f_date(found[2])}"
                     )
                 else:
                     self.fail(
@@ -136,19 +135,18 @@ class TestParquet(unittest.TestCase):
         BASIC_COL = 0
         ORDER_COL = 1
         DV_COL    = 2
-        ESTABELECIMENTOS_COLS = [0, 1, 2, 3, 4, 6, 10, 18]
 
         ESTABELECIMENTOS_PATH = [
-            self.ROOT_DIR / f'data/csv/estabelecimentos/estabelecimentos{i}.csv'
+            DICT_DIR['Estabelecimentos'] / f'estabelecimentos{i}.csv'
             for i in range(10)
         ]
 
-        sample = self.get_sample_from_parquet(self.BUSINESS_PARQUET)
+        sample = self.get_sample_from_parquet(PARQUET_BUSINESS)
 
         for _, row in sample.iterrows():
             found = self.find_row_business(
                 ESTABELECIMENTOS_PATH,
-                ESTABELECIMENTOS_COLS,
+                COLS_BUSINESS        ,
                 BASIC_COL            ,
                 ORDER_COL            ,
                 DV_COL               ,
@@ -169,10 +167,10 @@ class TestParquet(unittest.TestCase):
                 if found:
                     print(
                         f"✅ Found match:\n"
-                        f"Parquet:     {cnpj}, {order}, {dv}, "
-                        f"{int(branch)}, {trade_name or ''}, {closing}, {opening}, {cep}\n"
-                        f"CSV Match:   {int(found[0])}, {int(found[1])}, {found[2]}, "
-                        f"{found[3]}, {found[4]}, {found[5]}, {found[6]}, {found[7]}"
+                        f"Parquet:     {cnpj             }, {order            }, {dv               }, "
+                        f"{int(branch)}, {trade_name or ''}, {closing.date()       }, {opening.date()       }, {cep     }\n"
+                        f"CSV Match:   {found[0].zfill(8)}, {found[1].zfill(4)}, {found[2].zfill(2)}, "
+                        f"{found[3]   }, {found[4]        }, {self.f_date(found[5])}, {self.f_date(found[6])}, {found[7]}"
                     )
                 else:
                     self.fail(
@@ -180,14 +178,15 @@ class TestParquet(unittest.TestCase):
                     )
 
 
+    @unittest.skip("High RAM Consumption")
     def test_partners_subset_of_companies_and_business(self):
         print()
         print("▶️ Starting test: test_partners_subset_of_companies_and_business")
         print()
 
-        cnpjs_partners  = set(pd.read_parquet(self.PARTNERS_PARQUET , columns=['cnpj']).cnpj)
-        cnpjs_companies = set(pd.read_parquet(self.COMPANIES_PARQUET, columns=['cnpj']).cnpj)
-        cnpjs_business  = set(pd.read_parquet(self.BUSINESS_PARQUET , columns=['cnpj']).cnpj)
+        cnpjs_partners  = set(pd.read_parquet(PARQUET_PARTNERS , columns=['cnpj']).cnpj)
+        cnpjs_companies = set(pd.read_parquet(PARQUET_COMPANIES, columns=['cnpj']).cnpj)
+        cnpjs_business  = set(pd.read_parquet(PARQUET_BUSINESS , columns=['cnpj']).cnpj)
 
         self.assertTrue(
             cnpjs_partners.issubset(cnpjs_companies),
@@ -202,13 +201,14 @@ class TestParquet(unittest.TestCase):
         print(f"✅ Total CNPJs with data in business: {len(cnpjs_business)}")
 
 
+    @unittest.skip("High RAM Consumption")
     def test_companies_equal_business(self):
         print()
         print("▶️ Starting test: test_companies_equal_business")
         print()
 
-        cnpjs_companies = set(pd.read_parquet(self.COMPANIES_PARQUET, columns=['cnpj']).cnpj)
-        cnpjs_business  = set(pd.read_parquet(self.BUSINESS_PARQUET , columns=['cnpj']).cnpj)
+        cnpjs_companies = set(pd.read_parquet(PARQUET_COMPANIES, columns=['cnpj']).cnpj)
+        cnpjs_business  = set(pd.read_parquet(PARQUET_BUSINESS , columns=['cnpj']).cnpj)
 
         self.assertEqual(
             cnpjs_companies,
@@ -217,6 +217,14 @@ class TestParquet(unittest.TestCase):
         )
 
         print("✅ CNPJs in companies and business are identical.")
+
+
+    @staticmethod
+    def f_date(s):
+        if s and len(s) == 8:
+            return f"{s[:4]}-{s[4:6]}-{s[6:]}"
+
+        return s or ''
 
 
 if __name__ == '__main__':

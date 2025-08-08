@@ -31,7 +31,7 @@ data/
 
 ### 📥 DATA INGESTION
 
-The datasets must be downloaded and extracted by running the script `scripts/1_data_ingestion.py`. The ingestion process includes:
+The datasets must be downloaded and extracted by running the script `scripts/1_ingestion.py`. The ingestion process includes:
 
 1. **Downloading** 10 files named `Empresas[0-9].zip`, which after extraction total approximately **4.59 GB** of company data.
 2. **Downloading** 10 files named `Estabelecimentos[0-9].zip`, which after extraction total approximately **14.3 GB** of establishment-level data.
@@ -44,7 +44,7 @@ This script automates the download and extraction of large ZIP files using multi
 
 ### 🔄 DATA TRANSFORMATION
 
-After downloading and extracting the raw CSV files, you can transform the data into optimized and standardized Parquet files by running the script `scripts/2_data_transform.py`. This transformation is performed in four main steps and ensures that the final datasets are clean, well-structured, and ready for analysis or integration into data pipelines.
+After downloading and extracting the raw CSV files, you can transform the data into optimized and standardized Parquet files by running the script `scripts/2_transform.py`. This transformation is performed in four main steps and ensures that the final datasets are clean, well-structured, and ready for analysis or integration into data pipelines.
 
 1. **Column selection and renaming**: Only relevant columns are kept from the original CSV files, and are renamed to standardized names.
 2. **Data type conversion**: Numeric fields are explicitly cast to appropriate types (e.g., `int8`, `int16`) to reduce memory usage and ensure consistency.
@@ -64,7 +64,7 @@ After downloading and extracting the raw CSV files, you can transform the data i
 
 ### 🗃️ SQLITE DATABASE
 
-Run `scripts/3_create_sqlite.py` to create a local SQLite database by loading the Parquet files into three structured tables:
+Run `scripts/3_load_sqlite.py` to create a local SQLite database by loading the Parquet files into three structured tables:
 
 - `partners (cnpj, name_partner, start_date)`
 - `companies(cnpj, corporate_name, capital)`
