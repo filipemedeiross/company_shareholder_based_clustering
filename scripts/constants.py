@@ -11,9 +11,9 @@ PARQUET_DIR = ROOT_DIR / "data/parquet"
 SQLITE_PATH = ROOT_DIR / "data/sqlite/rfb.sqlite3"
 
 DICT_DIR = {
+    'Socios'          : CSV_DIR / "socios"          ,
+    'Empresas'        : CSV_DIR / "empresas"        ,
     'Estabelecimentos': CSV_DIR / "estabelecimentos",
-    'Empresas'        : CSV_DIR / "empresas",
-    'Socios'          : CSV_DIR / "socios",
 }
 
 PARQUET_PARTNERS  = PARQUET_DIR / 'partners.parquet'
@@ -47,6 +47,20 @@ NAMES_BUSINESS  = [
     'cnpj_dv'     ,
     'branch'      ,
     'trade_name'  ,
+    'closing_date',
+    'opening_date',
+    'cep'         ,
+]
+
+SORT_PARTNERS = [
+    'start_date'  ,
+    'name_partner',
+]
+SORT_COMPANIES = [
+    'capital',
+    'cnpj'   ,
+]
+SORT_BUSINESS = [
     'closing_date',
     'opening_date',
     'cep'         ,
