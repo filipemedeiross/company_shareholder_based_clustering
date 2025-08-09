@@ -20,6 +20,9 @@ def insert_parquet(
 
         df = table.read_row_group(i).to_pandas()
 
+        for col in df.select_dtypes(include=["datetime64[ns]"]):
+            df[col] = df[col].dt.strftime("%Y-%m-%d")
+
         if duplicates:
             df = df.drop_duplicates(
                 subset=duplicates,

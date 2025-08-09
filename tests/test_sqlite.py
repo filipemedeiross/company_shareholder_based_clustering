@@ -8,22 +8,18 @@ import pyarrow.parquet as pq
 import pyarrow.compute as pc
 import matplotlib.pyplot as plt
 
-from pathlib import Path
 from fastparquet import ParquetFile
+
+from scripts.constants import ROOT_DIR         , \
+                              SQLITE_PATH      , \
+                              PARQUET_PARTNERS , \
+                              PARQUET_COMPANIES, \
+                              PARQUET_BUSINESS
 
 
 class TestSQLiteBase(unittest.TestCase):
-    ROOT_DIR = Path(__file__).resolve().parent.parent
-    DATA_DIR = ROOT_DIR / 'data'
-
-    SQLITE_DB         = DATA_DIR / 'sqlite/rfb.sqlite3'
-    PARTNERS_PARQUET  = DATA_DIR / 'parquet/partners.parquet'
-    COMPANIES_PARQUET = DATA_DIR / 'parquet/companies.parquet'
-    BUSINESS_PARQUET  = DATA_DIR / 'parquet/business.parquet'
-
-
     def setUp(self):
-        self.conn   = sqlite3.connect(self.SQLITE_DB)
+        self.conn   = sqlite3.connect(SQLITE_PATH)
         self.cursor = self.conn.cursor()
 
     def tearDown(self):
@@ -75,7 +71,7 @@ class TestSQLite(TestSQLiteBase):
         print("▶️ Starting test: test_partners_exist_in_sqlite")
         print()
 
-        sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
+        sample = self.get_sample_from_parquet(PARQUET_PARTNERS)
 
         for _, (cnpj, partner, date) in sample.iterrows():
             with self.subTest(cnpj=cnpj):
@@ -84,7 +80,7 @@ class TestSQLite(TestSQLiteBase):
                     SELECT * FROM partners
                     WHERE cnpj = ? AND name_partner = ? AND start_date = ?
                     ''',
-                    (cnpj, partner, date)
+                    (cnpj, partner, date.strftime("%Y-%m-%d"))
                 )
                 results = self.cursor.fetchall()
 
@@ -101,8 +97,8 @@ class TestSQLite(TestSQLiteBase):
 
                     print(
                         f"✅ Found match:\n"
-                        f"Parquet:      {cnpj     }, {partner  }, {date     }\n"
-                        f"SQLite Match: {result[0]}, {result[1]}, {result[2]}"
+                        f"Parquet:      {cnpj     }, {partner  }, {date.strftime("%Y-%m-%d")}\n"
+                        f"SQLite Match: {result[0]}, {result[1]}, {result[2]                }"
                     )
 
     def test_companies_exist_in_sqlite(self):
@@ -110,7 +106,7 @@ class TestSQLite(TestSQLiteBase):
         print("▶️ Starting test: test_companies_exist_in_sqlite")
         print()
 
-        sample = self.get_sample_from_parquet(self.COMPANIES_PARQUET)
+        sample = self.get_sample_from_parquet(PARQUET_COMPANIES)
 
         for _, (cnpj, name, capital) in sample.iterrows():
             with self.subTest(cnpj=cnpj):
@@ -145,7 +141,7 @@ class TestSQLite(TestSQLiteBase):
         print("▶️ Starting test: test_business_exist_in_sqlite")
         print()
 
-        sample = self.get_sample_from_parquet(self.BUSINESS_PARQUET)
+        sample = self.get_sample_from_parquet(PARQUET_BUSINESS)
 
         for _, (cnpj, order, dv, *_) in sample.iterrows():
             with self.subTest(cnpj=cnpj, order=order, dv=dv):
@@ -180,7 +176,7 @@ class TestSQLite(TestSQLiteBase):
         print("🔎 Testing FTS5 on 'partners_fts.name_partner'")
         print()
 
-        sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
+        sample = self.get_sample_from_parquet(PARQUET_PARTNERS)
 
         for _, (_, name, _) in sample.iterrows():
             prefix = name.split()[0]
@@ -228,7 +224,7 @@ class TestSQLite(TestSQLiteBase):
         print("🔎 Testing FTS5 on 'business_fts.trade_name'")
         print()
 
-        sample = self.get_sample_trade_name(self.BUSINESS_PARQUET)
+        sample = self.get_sample_trade_name(PARQUET_BUSINESS)
 
         for trade_name in sample.trade_name:
             prefix = trade_name.split()[0]
@@ -285,7 +281,7 @@ class TestSQLiteQueries(TestSQLiteBase):
         print("⏱️ Comparing query times: 'name_partner' vs FTS5")
         print()
 
-        sample = self.get_sample_from_parquet(self.PARTNERS_PARQUET)
+        sample = self.get_sample_from_parquet(PARQUET_PARTNERS)
 
         times_like = []
         times_fts  = []
@@ -326,7 +322,7 @@ class TestSQLiteQueries(TestSQLiteBase):
         print("⏱️ Comparing query times: 'trade_name' vs FTS5")
         print()
 
-        sample = self.get_sample_trade_name(self.BUSINESS_PARQUET)
+        sample = self.get_sample_trade_name(PARQUET_BUSINESS)
 
         times_like = []
         times_fts  = []
@@ -335,7 +331,7 @@ class TestSQLiteQueries(TestSQLiteBase):
 
             t1 = self.time_query(
                 """
-                SELECT trade_name
+                SELECT rowid
                 FROM business
                 WHERE trade_name LIKE ?
                 """,
@@ -367,8 +363,8 @@ class TestSQLiteQueries(TestSQLiteBase):
         print("📈 Generating FTS5 vs LIKE performance chart...")
         print()
 
-        OUTPUT_PATH = self.ROOT_DIR / 'docs/tfs5'
-        OUTPUT_FILE = OUTPUT_PATH   / 'fts5_vs_like.png'
+        OUTPUT_PATH = ROOT_DIR    / 'docs/tfs5'
+        OUTPUT_FILE = OUTPUT_PATH / 'fts5_vs_like.png'
 
         if OUTPUT_FILE.exists():
             print(f"⚠️ Chart already exists at: {OUTPUT_FILE}, skipping generation.")

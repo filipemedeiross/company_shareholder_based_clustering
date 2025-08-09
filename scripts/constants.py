@@ -5,10 +5,11 @@ BASE_URL = "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
+
 TMP_DIR     = ROOT_DIR / "tmp"
-CSV_DIR     = ROOT_DIR / "data/csv"
-PARQUET_DIR = ROOT_DIR / "data/parquet"
-SQLITE_PATH = ROOT_DIR / "data/sqlite/rfb.sqlite3"
+DATA_DIR    = ROOT_DIR / "data"
+CSV_DIR     = DATA_DIR / "csv"
+PARQUET_DIR = DATA_DIR / "parquet"
 
 DICT_DIR = {
     'Socios'          : CSV_DIR / "socios"          ,
@@ -16,6 +17,7 @@ DICT_DIR = {
     'Estabelecimentos': CSV_DIR / "estabelecimentos",
 }
 
+SQLITE_PATH = DATA_DIR / "sqlite/rfb.sqlite3"
 PARQUET_PARTNERS  = PARQUET_DIR / 'partners.parquet'
 PARQUET_COMPANIES = PARQUET_DIR / 'companies.parquet'
 PARQUET_BUSINESS  = PARQUET_DIR / 'business.parquet'
