@@ -1,62 +1,14 @@
-import time
 import sqlite3
-import pyarrow.parquet as pq
 
-from pathlib import Path
+from .load import insert_parquet    , \
+                  measure_query_time
+from .constants import SQLITE_PATH      , \
+                       PARQUET_PARTNERS , \
+                       PARQUET_COMPANIES, \
+                       PARQUET_BUSINESS
 
-
-ROOT_DIR     = Path(__file__).resolve().parent.parent
-PARQUET_DIR  = ROOT_DIR / 'data/parquet'
-SQLITE_PATH  = ROOT_DIR / 'data/sqlite/rfb.sqlite3'
-
-PARQUET_PARTNERS  = PARQUET_DIR / 'partners.parquet'
-PARQUET_COMPANIES = PARQUET_DIR / 'companies.parquet'
-PARQUET_BUSINESS  = PARQUET_DIR / 'business.parquet'
 
 SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-
-def insert_parquet(
-    table_name     ,
-    parquet_file   ,
-    duplicates=None,
-):
-    print()
-    print(f"📥 Loading and inserting data into '{table_name}' from Parquet (by row group)...")
-
-    if duplicates:
-        seen = set()
-
-    table = pq.ParquetFile(parquet_file)
-    for i in range(table.num_row_groups):
-        print(f"  • Processing row_group {i + 1}...")
-
-        df = table.read_row_group(i).to_pandas()
-
-        if duplicates:
-            df = df.drop_duplicates(
-                subset=duplicates,
-                keep='first'     ,
-            )
-            df = df[~df[duplicates].isin(seen)]
-
-            seen.update(df[duplicates])
-
-        df.to_sql(
-            table_name        ,
-            conn              ,
-            index=False       ,
-            if_exists='append',
-        )
-
-        del df
-
-def measure_query_time(cursor, query, label):
-    start = time.perf_counter()
-    cursor.execute(query).fetchall()
-    end   = time.perf_counter()
-
-    print(f"⏱️ Query time for {label}: {end - start:.2f} seconds")
 
 
 # ==========================
@@ -72,7 +24,7 @@ cursor.execute('PRAGMA foreign_keys = ON')
 cursor.execute('DROP TABLE IF EXISTS companies')
 cursor.execute('''
     CREATE TABLE companies (
-        cnpj INTEGER PRIMARY KEY,
+        cnpj TEXT PRIMARY KEY,
         corporate_name TEXT,
         capital INTEGER
     )
@@ -81,9 +33,9 @@ cursor.execute('''
 cursor.execute('DROP TABLE IF EXISTS partners')
 cursor.execute('''
     CREATE TABLE partners (
-        cnpj INTEGER,
+        cnpj TEXT,
         name_partner TEXT,
-        start_date INTEGER,
+        start_date TEXT,
         FOREIGN KEY (cnpj) REFERENCES companies(cnpj)
     )
 ''')
@@ -91,14 +43,14 @@ cursor.execute('''
 cursor.execute('DROP TABLE IF EXISTS business')
 cursor.execute('''
     CREATE TABLE business (
-        cnpj INTEGER,
-        cnpj_order INTEGER,
-        cnpj_dv INTEGER,
+        cnpj TEXT,
+        cnpj_order TEXT,
+        cnpj_dv TEXT,
         branch BOOLEAN,
         trade_name TEXT,
-        closing_date INTEGER,
-        opening_date INTEGER,
-        cep INTEGER,
+        closing_date TEXT,
+        opening_date TEXT,
+        cep TEXT,
         PRIMARY KEY (cnpj, cnpj_order, cnpj_dv),
         FOREIGN KEY (cnpj) REFERENCES companies(cnpj)
     )
@@ -110,12 +62,13 @@ conn.commit()
 # 🚀 Load and insert all data
 # ===========================
 insert_parquet(
+    conn             ,
     'companies'      ,
     PARQUET_COMPANIES,
     duplicates='cnpj',
 )
-insert_parquet('partners' , PARQUET_PARTNERS)
-insert_parquet('business' , PARQUET_BUSINESS)
+insert_parquet(conn, 'partners' , PARQUET_PARTNERS)
+insert_parquet(conn, 'business' , PARQUET_BUSINESS)
 
 conn.commit()
 
@@ -125,6 +78,22 @@ conn.commit()
 print()
 print("🔍 Measuring query performance before indexing...")
 print()
+
+measure_query_time(
+    cursor,
+    '''SELECT *
+       FROM partners
+       WHERE start_date >= '2020-01-01' AND start_date < '2021-01-01' ''',
+    "partners.start_date (before index)"
+)
+
+measure_query_time(
+    cursor,
+    '''SELECT *
+       FROM business
+       WHERE opening_date >= '2020-01-01' AND closing_date <= '2021-12-31' ''',
+    "business.opening_date + closing_date (before index)"
+)
 
 measure_query_time(
     cursor,
@@ -142,12 +111,15 @@ measure_query_time(
     "business.trade_name (before index)"
 )
 
-# =============================
-# 📌 Create FTS5 virtual tables
-# =============================
+# =========================================
+# 📌 Create indexes and FTS5 virtual tables
+# =========================================
 print()
-print("⚙️ Creating FTS5 virtual tables for text search...")
+print("⚙️ Creating indexes and FTS5 virtual tables for text search...")
 print()
+
+cursor.execute('CREATE INDEX IF NOT EXISTS idx_partners_start_date ON partners(start_date)')
+cursor.execute('CREATE INDEX IF NOT EXISTS idx_business_opening_closing ON business(opening_date, closing_date)')
 
 cursor.execute('DROP TABLE IF EXISTS partners_fts')
 cursor.execute('CREATE VIRTUAL TABLE partners_fts USING fts5(name_partner, content="partners", content_rowid="rowid")')
@@ -159,12 +131,28 @@ cursor.execute('INSERT INTO business_fts(rowid, trade_name) SELECT rowid, trade_
 
 conn.commit()
 
-# =======================================
-# ✅ Measure performance using FTS5 MATCH
-# =======================================
+# =========================
+# ✅ Measure after indexing
+# =========================
 print()
 print("✅ Measuring query performance using FTS5 indexes...")
 print()
+
+measure_query_time(
+    cursor,
+    '''SELECT *
+       FROM partners
+       WHERE start_date >= '2020-01-01' AND start_date < '2021-01-01' ''',
+    "partners.start_date (after index)"
+)
+
+measure_query_time(
+    cursor,
+    '''SELECT *
+       FROM business
+       WHERE opening_date >= '2020-01-01' AND closing_date <= '2021-12-31' ''',
+    "business.opening_date + closing_date (after index)"
+)
 
 measure_query_time(
     cursor,
