@@ -28,6 +28,9 @@ class Partners(models.Model):
         verbose_name        = 'Partner'
         verbose_name_plural = 'Partners'
 
+    def __str__(self):
+        return f"{self.cnpj} - {self.name_partner}"
+
 
 class Business(models.Model):
     rowid        = models.IntegerField(primary_key=True)
