@@ -50,6 +50,9 @@ class Business(models.Model):
         verbose_name        = 'Business'
         verbose_name_plural = 'Businesses'
 
+    def __str__(self):
+        return f"{self.cnpj}.{self.cnpj_order}-{self.cnpj_dv}"
+
 
 class PartnersFts(models.Model):
     rowid        = models.IntegerField(primary_key=True)
@@ -61,6 +64,9 @@ class PartnersFts(models.Model):
         verbose_name        = 'Partners FTS'
         verbose_name_plural = 'Partners FTSs'
 
+    def __str__(self):
+        return f"{self.name_partner}"
+
 
 class BusinessFts(models.Model):
     rowid      = models.IntegerField(primary_key=True)
@@ -71,3 +77,6 @@ class BusinessFts(models.Model):
         db_table = 'business_fts'
         verbose_name        = 'Businesses FTS'
         verbose_name_plural = 'Businesses FTSs'
+
+    def __str__(self):
+        return f"{self.trade_name}"
