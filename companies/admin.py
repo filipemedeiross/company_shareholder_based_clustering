@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.contrib import admin
 
 from .models import Companies  , \
@@ -10,16 +9,16 @@ from .models import Companies  , \
 
 @admin.register(Companies)
 class CompaniesAdmin(admin.ModelAdmin):
-    list_display  = ('cnpj_str', 'corporate_name', 'capital')
-    search_fields = ('cnpj'    , 'corporate_name',)
+    list_display  = ('cnpj', 'corporate_name', 'capital')
+    search_fields = ('cnpj', 'corporate_name',)
 
     list_per_page = 20
 
 
 @admin.register(Partners)
 class PartnersAdmin(admin.ModelAdmin):
-    list_display  = ('cnpj_str', 'name_partner', 'start_date_obj')
-    search_fields = ('cnpj'    , 'name_partner',)
+    list_display  = ('cnpj', 'name_partner', 'start_date')
+    search_fields = ('cnpj', 'name_partner',)
 
     list_per_page = 20
 
@@ -27,14 +26,14 @@ class PartnersAdmin(admin.ModelAdmin):
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
     list_display  = (
-        'cnpj_str'        ,
-        'cnpj_order_str'  ,
-        'cnpj_dv_str'     ,
-        'trade_name'      ,
-        'branch'          ,
-        'opening_date_obj',
-        'closing_date_obj',
-        'cep_str'         ,
+        'cnpj'        ,
+        'cnpj_order'  ,
+        'cnpj_dv'     ,
+        'trade_name'  ,
+        'branch'      ,
+        'opening_date',
+        'closing_date',
+        'cep'         ,
     )
     search_fields = ('cnpj'  , 'trade_name',)
     list_filter   = ('branch',)
