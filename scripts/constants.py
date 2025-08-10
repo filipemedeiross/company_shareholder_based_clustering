@@ -1,23 +1,23 @@
 from pathlib import Path
 
 
-BASE_URL = "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/2025-07/"
+BASE_URL = 'https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/2025-07/'
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
-TMP_DIR     = ROOT_DIR / "tmp"
-DATA_DIR    = ROOT_DIR / "data"
-CSV_DIR     = DATA_DIR / "csv"
-PARQUET_DIR = DATA_DIR / "parquet"
+TMP_DIR     = ROOT_DIR / 'tmp'
+DATA_DIR    = ROOT_DIR / 'data'
+CSV_DIR     = DATA_DIR / 'csv'
+PARQUET_DIR = DATA_DIR / 'parquet'
 
 DICT_DIR = {
-    'Socios'          : CSV_DIR / "socios"          ,
-    'Empresas'        : CSV_DIR / "empresas"        ,
-    'Estabelecimentos': CSV_DIR / "estabelecimentos",
+    'Socios'          : CSV_DIR / 'socios'          ,
+    'Empresas'        : CSV_DIR / 'empresas'        ,
+    'Estabelecimentos': CSV_DIR / 'estabelecimentos',
 }
 
-SQLITE_PATH = DATA_DIR / "sqlite/rfb.sqlite3"
+SQLITE_PATH = DATA_DIR / 'sqlite/rfb.sqlite3'
 PARQUET_PARTNERS  = PARQUET_DIR / 'partners.parquet'
 PARQUET_COMPANIES = PARQUET_DIR / 'companies.parquet'
 PARQUET_BUSINESS  = PARQUET_DIR / 'business.parquet'
