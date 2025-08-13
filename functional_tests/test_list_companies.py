@@ -16,12 +16,15 @@ class ListCompaniesTests(unittest.TestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.server = subprocess.Popen([
-            "python"        ,
-            "manage.py"     ,
-            "runserver"     ,
-            "127.0.0.1:8000",
-        ])
+        cls.server = subprocess.Popen(
+            [
+                "python"        ,
+                "manage.py"     ,
+                "runserver"     ,
+                "127.0.0.1:8000",
+            ],
+            stdout=subprocess.PIPE,
+        )
         time.sleep(3)
 
         service = Service("/snap/bin/geckodriver")
