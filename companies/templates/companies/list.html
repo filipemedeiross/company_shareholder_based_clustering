@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Companies</title>
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 24px; }
+        .company-row { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .company-row:last-child { border-bottom: none; }
+        .pagination { display: flex; gap: 8px; margin-top: 16px; }
+        .pagination a { text-decoration: none; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; color: #333; }
+        .pagination .current { font-weight: 700; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+</head>
+<body>
+    <h1>Companies</h1>
+
+    <section id="company-list">
+        {% for company in companies %}
+            <div class="company-row">
+                <div><strong>CNPJ:</strong> {{ company.cnpj }}</div>
+                <div><strong>Name:</strong> {{ company.corporate_name }}</div>
+                <div><strong>Capital:</strong> {{ company.capital }}</div>
+            </div>
+        {% empty %}
+            <p>No companies found.</p>
+        {% endfor %}
+    </section>
+
+    {% if is_paginated %}
+        <nav aria-label="pagination">
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+
+                <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+</body>
+</html>
