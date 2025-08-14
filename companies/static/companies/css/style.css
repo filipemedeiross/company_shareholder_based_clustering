@@ -1,10 +1,23 @@
 /* Page base styles */
+
 body {
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    font-family:
+        system-ui          ,
+        -apple-system      ,
+        Segoe UI           ,
+        Roboto             ,
+        Ubuntu             ,
+        Cantarell          ,
+        Noto Sans          ,
+        Helvetica          ,
+        Arial              ,
+        "Apple Color Emoji",
+        "Segoe UI Emoji"   ;
     margin: 24px;
 }
 
 /* Company list */
+
 #company-list {
     display: block;
 }
@@ -19,6 +32,7 @@ body {
 }
 
 /* Pagination */
+
 nav[aria-label="pagination"] {
     margin-top: 16px;
 }
@@ -38,7 +52,6 @@ nav[aria-label="pagination"] {
 }
 
 .pagination .current {
+    padding: 6px;
     font-weight: 700;
 }
-
-
