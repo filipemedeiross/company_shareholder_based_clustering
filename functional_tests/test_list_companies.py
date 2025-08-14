@@ -24,6 +24,7 @@ class ListCompaniesTests(unittest.TestCase):
                 "127.0.0.1:8000",
             ],
             stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         time.sleep(3)
 
@@ -71,6 +72,70 @@ class ListCompaniesTests(unittest.TestCase):
         self.assertTrue(
             paginator                    ,
             "No pagination element found",
+        )
+
+    def test_pagination_next_click_redirects_to_page_2(self):
+        self.browser.get(
+            self.base_url + "/"
+        )
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "#company-list")
+            )
+        )
+
+        next_link = self.browser.find_element(
+            By.LINK_TEXT,
+            "Next"      ,
+        )
+        next_link.click()
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "#company-list")
+            )
+        )
+
+        current_url = self.browser.current_url
+        self.assertIn(
+            "?page=2"  ,
+            current_url,
+            f"Expected redirect to page 2, got: {current_url}"
+        )
+
+    def test_header_companies_click_returns_to_first_page(self):
+        self.browser.get(
+            self.base_url + "/?page=2"
+        )
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "#company-list")
+            )
+        )
+
+        home_link = self.browser.find_element(
+            By.CSS_SELECTOR            ,
+            ".page-header .home-button",
+        )
+        home_link.click()
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "#company-list")
+            )
+        )
+
+        current_url = self.browser.current_url
+        self.assertTrue(
+            current_url.endswith("127.0.0.1:8000/")                ,
+            f"Expected to be back on first page: got {current_url}",
+        )
+        self.assertNotIn(
+            "page="    ,
+            current_url,
+            f"Expected no page param on home",
         )
 
     def test_layout_and_styling_table_centered(self):
