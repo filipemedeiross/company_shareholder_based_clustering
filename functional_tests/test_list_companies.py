@@ -73,4 +73,25 @@ class ListCompaniesTests(unittest.TestCase):
             "No pagination element found",
         )
 
-        time.sleep(3)
+    def test_layout_and_styling_table_centered(self):
+        self.browser.get(
+            self.base_url + "/"
+        )
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "#company-list .company-table")
+            )
+        )
+
+        window = self.browser.get_window_size()
+        table  = self.browser.find_element(
+            By.CSS_SELECTOR, "#company-list .company-table"
+        ).rect
+
+        self.assertAlmostEqual(
+            table ['x'] + table['width'] / 2,
+            window['width']              / 2,
+            delta=20                        ,
+            msg=f"Table is not approximately centered",
+        )
