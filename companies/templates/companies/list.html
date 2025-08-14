@@ -14,22 +14,41 @@
     </head>
 
     <body>
-        <h1>Companies</h1>
+        <header class="page-header">
+            <h1>
+                <a class="home-button" href="{% url 'companies:list' %}">
+                    Companies
+                </a>
+            </h1>
+        </header>
 
-        <section id="company-list">
-            {% for company in companies %}
-                <div class="company-row">
-                    <div><strong>CNPJ:</strong> {{ company.cnpj }}</div>
-                    <div><strong>Name:</strong> {{ company.corporate_name }}</div>
-                    <div><strong>Capital:</strong> {{ company.capital }}</div>
-                </div>
-            {% empty %}
+        <section id="company-list" class="centered">
+            {% if companies %}
+                <table class="company-table">
+                    <thead>
+                        <tr>
+                            <th>Cnpj</th>
+                            <th>Name</th>
+                            <th>Capital</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for company in companies %}
+                            <tr class="company-row">
+                                <td>{{ company.cnpj }}</td>
+                                <td>{{ company.corporate_name }}</td>
+                                <td>{{ company.capital }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
                 <p>No companies found.</p>
-            {% endfor %}
+            {% endif %}
         </section>
 
         {% if is_paginated %}
-            <nav aria-label="pagination">
+            <nav aria-label="pagination" class="centered">
                 <div class="pagination">
                     {% if page_obj.has_previous %}
                         <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
