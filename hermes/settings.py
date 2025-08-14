@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions'    ,
     'django.contrib.messages'    ,
     'django.contrib.staticfiles' ,
+    'django.contrib.humanize'    ,
 
     'companies',
 ]
@@ -84,11 +85,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-BR'
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
+USE_L10N = True
 
 USE_TZ = True
 

@@ -1,4 +1,6 @@
-{% load static %}
+{% load static   %}
+{% load l10n     %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -35,9 +37,9 @@
                     <tbody>
                         {% for company in companies %}
                             <tr class="company-row">
-                                <td>{{ company.cnpj }}</td>
-                                <td>{{ company.corporate_name }}</td>
-                                <td>{{ company.capital }}</td>
+                                <td>{{ company.cnpj             }}</td>
+                                <td>{{ company.corporate_name   }}</td>
+                                <td>{{ company.capital|intcomma }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
