@@ -116,8 +116,8 @@ class ListCompaniesTests(unittest.TestCase):
         )
 
         home_link = self.browser.find_element(
-            By.CSS_SELECTOR            ,
-            ".page-header .home-button",
+            By.CSS_SELECTOR          ,
+            ".top-bar .top-bar-title",
         )
         home_link.click()
 
