@@ -98,7 +98,7 @@ body {
     flex: 1;
     min-width: 200px;
     padding: 10px 12px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-primary-50);
     border-radius: 8px;
 }
 .search-form button[type="submit"] {
@@ -114,25 +114,6 @@ body {
     cursor: pointer;
 }
 
-.search-form .clear-search {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    color: var(--color-primary-600);
-    background: var(--color-primary-50);
-    text-decoration: none;
-}
-.search-error {
-    margin-bottom: 12px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    background: #fff3f3;
-    color: #8a1f1f;
-    border: 1px solid #f3c2c2;
-}
 
 /* Company list */
 
