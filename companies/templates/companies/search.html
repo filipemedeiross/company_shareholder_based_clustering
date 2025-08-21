@@ -1,0 +1,25 @@
+{% extends 'companies/base.html' %}
+
+{% block content %}
+    {% include 'companies/partials/search_form.html' %}
+    {% include 'companies/partials/table.html'       %}
+
+    {% if is_paginated %}
+        <nav aria-label="pagination" class="centered">
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+
+{% endblock %}

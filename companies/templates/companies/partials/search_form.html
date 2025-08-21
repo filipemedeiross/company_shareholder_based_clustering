@@ -1,0 +1,16 @@
+<div class="search-container centered">
+
+    <form class="search-form" method="get" action="{% url 'companies:search' %}">
+        <input
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search for companies..."
+            aria-label="search-companies"
+        />
+        <button type="submit">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            Search
+        </button>
+
+</div>
