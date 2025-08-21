@@ -1,0 +1,25 @@
+{% load humanize %}
+<section id="company-list" class="centered">
+    {% if companies %}
+        <table class="company-table">
+            <thead>
+                <tr>
+                    <th>Cnpj</th>
+                    <th>Name</th>
+                    <th>Capital</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                    <tr class="company-row">
+                        <td>{{ company.cnpj             }}</td>
+                        <td>{{ company.corporate_name   }}</td>
+                        <td>{{ company.capital|intcomma }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No companies found.</p>
+    {% endif %}
+</section>

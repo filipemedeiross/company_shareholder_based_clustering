@@ -1,72 +1,25 @@
-{% load static   %}
-{% load l10n     %}
-{% load humanize %}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'companies/base.html' %}
 
-    <head>
-        <meta charset="UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+{% block content %}
+    {% include 'companies/partials/search_form.html' %}
+    {% include 'companies/partials/table.html'       %}
 
-        <title>Hermes</title>
+    {% if is_paginated %}
+        <nav aria-label="pagination" class="centered">
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="stylesheet" href="{% static 'companies/css/style.css' %}">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" referrerpolicy="no-referrer" />
-    </head>
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
 
-    <body>
-        <header class="top-bar">
-            <h1 class="top-bar-title">
-                <a href="{% url 'companies:list' %}">
-                    <i class="fa-solid fa-chart-line"></i> Hermes
-                </a>
-            </h1>
-        </header>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
 
-        <section id="company-list" class="centered">
-            {% if companies %}
-                <table class="company-table">
-                    <thead>
-                        <tr>
-                            <th>Cnpj</th>
-                            <th>Name</th>
-                            <th>Capital</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for company in companies %}
-                            <tr class="company-row">
-                                <td>{{ company.cnpj             }}</td>
-                                <td>{{ company.corporate_name   }}</td>
-                                <td>{{ company.capital|intcomma }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>No companies found.</p>
-            {% endif %}
-        </section>
-
-        {% if is_paginated %}
-            <nav aria-label="pagination" class="centered">
-                <div class="pagination">
-                    {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                    {% endif %}
-
-                    <span class="current">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                    </span>
-
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}">Next</a>
-                    {% endif %}
-                </div>
-            </nav>
-        {% endif %}
-    </body>
-
-</html>
+{% endblock %}
