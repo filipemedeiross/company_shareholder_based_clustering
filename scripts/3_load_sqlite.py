@@ -97,7 +97,7 @@ measure_query_time(
 
 measure_query_time(
     cursor,
-    '''SELECT name_partner
+    '''SELECT COUNT(*)
        FROM partners
        WHERE name_partner LIKE 'João%' ''',
     "partners.name_partner (before index)"
@@ -105,10 +105,18 @@ measure_query_time(
 
 measure_query_time(
     cursor,
-    '''SELECT trade_name
+    '''SELECT COUNT(*)
        FROM business
        WHERE trade_name LIKE 'Padaria%' ''',
     "business.trade_name (before index)"
+)
+
+measure_query_time(
+    cursor,
+    '''SELECT COUNT(*)
+       FROM companies
+       WHERE corporate_name LIKE 'Comercio%' ''',
+    "companies.corporate_name (before index)"
 )
 
 # =========================================
@@ -120,6 +128,10 @@ print()
 
 cursor.execute('CREATE INDEX IF NOT EXISTS idx_partners_start_date ON partners(start_date)')
 cursor.execute('CREATE INDEX IF NOT EXISTS idx_business_opening_closing ON business(opening_date, closing_date)')
+
+cursor.execute('DROP TABLE IF EXISTS companies_fts')
+cursor.execute('CREATE VIRTUAL TABLE companies_fts USING fts5(corporate_name, content="companies", content_rowid="rowid")')
+cursor.execute('INSERT INTO companies_fts(rowid, corporate_name) SELECT rowid, corporate_name FROM companies')
 
 cursor.execute('DROP TABLE IF EXISTS partners_fts')
 cursor.execute('CREATE VIRTUAL TABLE partners_fts USING fts5(name_partner, content="partners", content_rowid="rowid")')
@@ -156,7 +168,7 @@ measure_query_time(
 
 measure_query_time(
     cursor,
-    '''SELECT name_partner
+    '''SELECT COUNT(*)
        FROM partners_fts
        WHERE partners_fts MATCH 'João*' ''',
     "partners.name_partner (FTS5)"
@@ -164,10 +176,18 @@ measure_query_time(
 
 measure_query_time(
     cursor,
-    '''SELECT trade_name
+    '''SELECT COUNT(*)
        FROM business_fts
        WHERE business_fts MATCH 'Padaria*' ''',
     "business.trade_name (FTS5)"
+)
+
+measure_query_time(
+    cursor,
+    '''SELECT COUNT(*)
+       FROM companies_fts
+       WHERE companies_fts MATCH 'Comercio*' ''',
+    "companies.corporate_name (FTS5)"
 )
 
 # ===========
