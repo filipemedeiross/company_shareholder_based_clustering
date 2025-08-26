@@ -57,6 +57,12 @@ class TestSQLiteBase(unittest.TestCase):
 
         return table.to_pandas().sample(n)
 
+    def get_sample_corporate_name(self, filename, n=3):
+        table = pq.read_table(filename, columns=['corporate_name'])
+        table = table.filter(pc.field('corporate_name').is_valid())
+
+        return table.to_pandas().sample(n)
+
     def time_query(self, query, params):
         start = time.time()
         self.cursor.execute(query, params)
@@ -274,12 +280,68 @@ class TestSQLite(TestSQLiteBase):
                 for name in names:
                     print(f"   • {name}")
 
+    def test_fts_corporate_name(self):
+        print()
+        print("🔎 Testing FTS5 on 'companies_fts.corporate_name'")
+        print()
+
+        sample = self.get_sample_corporate_name(PARQUET_COMPANIES)
+
+        for corporate_name in sample.corporate_name:
+            prefix = corporate_name.split()[0]
+            match  = f'"{prefix}"'
+
+            self.cursor.execute(
+                '''
+                SELECT rowid FROM companies_fts
+                WHERE companies_fts MATCH ?
+                ORDER BY RANDOM()
+                LIMIT 10
+                ''',
+                (match,)
+            )
+            rowids = [r[0] for r in self.cursor.fetchall()]
+
+            if not rowids:
+                self.fail(f"❌ No FTS match found for prefix '{match}'")
+
+            self.cursor.execute(
+                f'''
+                SELECT corporate_name FROM companies
+                WHERE rowid IN ({','.join(['?'] * len(rowids))})
+                ''',
+                rowids
+            )
+            names = [r[0] for r in self.cursor.fetchall()]
+
+            if not all(
+                prefix.upper() in name.upper()
+                for name in names
+            ):
+                print(f"🔹 Full corporate name sampled: {corporate_name}")
+                print(f"🔹 First name used as prefix: '{prefix}'"        )
+
+                for name in names:
+                    if prefix.upper() not in name.upper():
+                        print(f"   • {name}")
+
+                self.fail(f"❌ RowIDs found, but not all contain the prefix '{prefix}'")
+            else:
+                print(f"✅ FTS5 match success")
+                print(f"🔹 Full corporate name sampled: {corporate_name}" )
+                print(f"🔹 First name used as prefix: '{prefix}'"         )
+                print( "🔹 Matching corporate names returned from SQLite:")
+
+                for name in names:
+                    print(f"   • {name}")
+
 
 class TestSQLiteQueries(TestSQLiteBase):
-    def test_query_time_fts_name_partner(self):
-        print()
-        print("⏱️ Comparing query times: 'name_partner' vs FTS5")
-        print()
+    def test_query_time_fts_name_partner(self, verbose=True):
+        if verbose:
+            print()
+            print("⏱️ Comparing query times: 'name_partner' vs FTS5")
+            print()
 
         sample = self.get_sample_from_parquet(PARQUET_PARTNERS)
 
@@ -313,14 +375,15 @@ class TestSQLiteQueries(TestSQLiteBase):
 
         if self.avg_lp < self.avg_fp:
             self.fail("❌ FTS5 query is slower than direct LIKE query on the base table")
-        else:
+        elif verbose:
             print(f"📊 Average LIKE time for 'name_partner': {self.avg_lp:.2f}s")
             print(f"📊 Average FTS5 time for 'name_partner': {self.avg_fp:.2f}s")
 
-    def test_query_time_fts_trade_name(self):
-        print()
-        print("⏱️ Comparing query times: 'trade_name' vs FTS5")
-        print()
+    def test_query_time_fts_trade_name(self, verbose=True):
+        if verbose:
+            print()
+            print("⏱️ Comparing query times: 'trade_name' vs FTS5")
+            print()
 
         sample = self.get_sample_trade_name(PARQUET_BUSINESS)
 
@@ -354,9 +417,51 @@ class TestSQLiteQueries(TestSQLiteBase):
 
         if self.avg_lt < self.avg_ft:
             self.fail("❌ FTS5 query is slower than direct LIKE query on the base table")
-        else:
+        elif verbose:
             print(f"📊 Average LIKE time for 'trade_name': {self.avg_lt:.2f}s")
             print(f"📊 Average FTS5 time for 'trade_name': {self.avg_ft:.2f}s")
+
+    def test_query_time_fts_corporate_name(self, verbose=True):
+        if verbose:
+            print()
+            print("⏱️ Comparing query times: 'corporate_name' vs FTS5")
+            print()
+
+        sample = self.get_sample_corporate_name(PARQUET_COMPANIES)
+
+        times_like = []
+        times_fts  = []
+        for corporate_name in sample.corporate_name:
+            prefix = corporate_name.split()[0]
+
+            t1 = self.time_query(
+                """
+                SELECT rowid
+                FROM companies
+                WHERE corporate_name LIKE ?
+                """,
+                (f"{prefix}%",)
+            )
+            t2 = self.time_query(
+                """
+                SELECT rowid
+                FROM companies_fts
+                WHERE companies_fts MATCH ?
+                """,
+                (f'"{prefix}*"',)
+            )
+
+            times_like.append(t1)
+            times_fts.append (t2)
+
+        self.avg_lc = sum(times_like) / len(times_like)
+        self.avg_fc = sum(times_fts ) / len(times_fts )
+
+        if self.avg_lc < self.avg_fc:
+            self.fail("❌ FTS5 query is slower than direct LIKE query on the base table")
+        elif verbose:
+            print(f"📊 Average LIKE time for 'corporate_name': {self.avg_lc:.2f}s")
+            print(f"📊 Average FTS5 time for 'corporate_name': {self.avg_fc:.2f}s")
 
     def test_report_generate_fts5_vs_like_chart(self):
         print()
@@ -372,20 +477,28 @@ class TestSQLiteQueries(TestSQLiteBase):
 
         OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
-        self.test_query_time_fts_name_partner()
-        self.test_query_time_fts_trade_name  ()
+        self.test_query_time_fts_name_partner  (verbose=False)
+        self.test_query_time_fts_trade_name    (verbose=False)
+        self.test_query_time_fts_corporate_name(verbose=False)
 
         labels = ['LIKE', 'FTS5']
         partner_times = [self.avg_lp, self.avg_fp]
         trade_times   = [self.avg_lt, self.avg_ft]
-        x = range(len(labels))
+        company_times = [self.avg_lc, self.avg_fc]
 
-        fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+        x = range(len(labels))
+        y = max(
+            max(partner_times),
+            max(trade_times  ),
+            max(company_times),
+        )
+
+        fig, axs = plt.subplots(1, 3, figsize=(15, 5))
         fig.suptitle("Query Time Comparison", fontsize=14)
 
         axs[0].bar(
-            x                               ,
-            partner_times                   ,
+            x                           ,
+            partner_times               ,
             color=['#FF9999', '#99CCFF'],
         )
         axs[0].set_title("partners.name_partner")
@@ -394,13 +507,25 @@ class TestSQLiteQueries(TestSQLiteBase):
         axs[0].set_xticklabels(labels)
 
         axs[1].bar(
-            x                               ,
-            trade_times                     ,
+            x                           ,
+            trade_times                 ,
             color=['#FF9999', '#99CCFF'],
         )
         axs[1].set_title("business.trade_name")
         axs[1].set_xticks(x)
         axs[1].set_xticklabels(labels)
+
+        axs[2].bar(
+            x                           ,
+            company_times               ,
+            color=['#FF9999', '#99CCFF'],
+        )
+        axs[2].set_title("companies.corporate_name")
+        axs[2].set_xticks(x)
+        axs[2].set_xticklabels(labels)
+
+        for ax in axs:
+            ax.set_ylim(0, y * 1.1)
 
         plt.tight_layout()
         plt.savefig(OUTPUT_FILE)
