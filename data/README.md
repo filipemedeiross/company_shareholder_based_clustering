@@ -72,10 +72,11 @@ Run `scripts/3_load_sqlite.py` to create a local SQLite database by loading the 
 
 After execution, you’ll have a lightweight SQLite database at `data/sqlite/rfb.sqlite3`, offering enhanced performance for prototyping, searching, and exploratory analysis. The data is inserted efficiently by processing each row group individually, and duplicate entries in the `companies` table are removed based on the `cnpj` field.
 
-To enhance query performance on textual columns (`name_partner` and `trade_name`), the script also creates **FTS5 virtual tables**:
+To enhance query performance on textual columns (`name_partner`, `corporate_name` and `trade_name`), the script also creates **FTS5 virtual tables**:
 
-- `partners_fts(name_partner)`
-- `business_fts(trade_name)`
+- `partners_fts (name_partner)`
+- `companies_fts(corporate_name)`
+- `business_fts (trade_name)`
 
 These indexes enable fast full-text searches using the `MATCH` operator, which significantly outperforms standard `LIKE` queries—especially for prefix-based searches. The chart below illustrates the performance difference between `LIKE` and `FTS5 MATCH` on the columns name_partner and trade_name:
 
