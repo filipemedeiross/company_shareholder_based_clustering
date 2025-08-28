@@ -58,11 +58,18 @@ WSGI_APPLICATION = 'hermes.wsgi.application'
 # Database
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'data/sqlite/rfb.sqlite3',
-    }
+    "default" : {
+        "ENGINE" : "django.db.backends.sqlite3",
+        "NAME"   : BASE_DIR / "data/sqlite/db.sqlite3",
+    },
+    "rfb" : {
+        "ENGINE"  : "django.db.backends.sqlite3",
+        "NAME"    : f"file:{(BASE_DIR / 'data/sqlite/rfb.sqlite3').as_posix()}?mode=ro&cache=shared",
+        "OPTIONS" : {"uri": True},
+    },
 }
+
+DATABASE_ROUTERS = ["companies.router.RFBRouter"]
 
 
 # Password validation

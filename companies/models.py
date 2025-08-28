@@ -15,6 +15,8 @@ class Companies(models.Model):
     def __str__(self):
         return f"{self.cnpj}"
 
+    rfb = True
+
 
 class Partners(models.Model):
     rowid        = models.IntegerField(primary_key=True)
@@ -30,6 +32,8 @@ class Partners(models.Model):
 
     def __str__(self):
         return f"{self.cnpj} - {self.name_partner}"
+
+    rfb = True
 
 
 class Business(models.Model):
@@ -53,6 +57,8 @@ class Business(models.Model):
     def __str__(self):
         return f"{self.cnpj}.{self.cnpj_order}-{self.cnpj_dv}"
 
+    rfb = True
+
 
 class PartnersFts(models.Model):
     rowid        = models.IntegerField(primary_key=True)
@@ -67,6 +73,21 @@ class PartnersFts(models.Model):
     def __str__(self):
         return f"{self.name_partner}"
 
+    rfb = True
+
+
+class CompaniesFts(models.Model):
+    rowid          = models.IntegerField(primary_key=True)
+    corporate_name = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'companies_fts'
+        verbose_name        = 'Companies FTS'
+        verbose_name_plural = 'Companies FTSs'
+
+    rfb = True
+
 
 class BusinessFts(models.Model):
     rowid      = models.IntegerField(primary_key=True)
@@ -80,3 +101,5 @@ class BusinessFts(models.Model):
 
     def __str__(self):
         return f"{self.trade_name}"
+
+    rfb = True
