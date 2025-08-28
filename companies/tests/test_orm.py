@@ -1,7 +1,7 @@
 import time
 import unittest
 
-from django.db         import connection
+from django.db         import connections
 from django.test.utils import CaptureQueriesContext
 
 from companies.models import Companies  , \
@@ -17,7 +17,7 @@ class ORMPerformanceTests(unittest.TestCase):
         queryset,
         limit=3 ,
     ):
-        with CaptureQueriesContext(connection) as ctx:
+        with CaptureQueriesContext(connections['rfb']) as ctx:
             start     = time.perf_counter()
             results   = list(queryset())
             elapsed_s = time.perf_counter() - start
