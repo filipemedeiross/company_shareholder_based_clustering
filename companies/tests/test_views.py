@@ -116,19 +116,16 @@ class TestCompaniesSearchView(unittest.TestCase):
             )
         )
 
-    def test_search_combines_cnpj_and_name_filters(self):
-        search_term = '00000020'
+    def test_search_case_insensitive_for_corporate_name(self):
+        search_term = self.any_name[:5]
 
-        response  = self.client.get(self.url, {'q': search_term})
-        companies = response.context[COMPANIES_LIST_CONTEXT]
+        response_upper = self.client.get(self.url, {'q': search_term.upper()})
+        response_lower = self.client.get(self.url, {'q': search_term.lower()})
 
-        self.assertTrue(
-            all(
-                company.cnpj.startswith(search_term) or
-                search_term in company.corporate_name.lower()
-                for company in companies
-            )
-        )
+        companies_upper = response_upper.context[COMPANIES_LIST_CONTEXT]
+        companies_lower = response_lower.context[COMPANIES_LIST_CONTEXT]
+
+        self.assertEqual(len(companies_upper), len(companies_lower))
 
     def test_search_preserves_query_in_pagination(self):
         search_term = self.any_name[:5]
@@ -143,6 +140,12 @@ class TestCompaniesSearchView(unittest.TestCase):
             )
         )
 
+    def test_search_inherits_pagination_from_parent(self):
+        response = self.client.get(self.url, {'q': self.first_cnpj})
+
+        self.assertIn('page_obj'    , response.context)
+        self.assertIn('is_paginated', response.context)
+
     def test_search_uses_correct_template(self):
         response = self.client.get(self.url, {'q': self.first_cnpj})
 
@@ -153,20 +156,3 @@ class TestCompaniesSearchView(unittest.TestCase):
         ]
 
         self.assertIn('companies/search.html', template_names)
-
-    def test_search_inherits_pagination_from_parent(self):
-        response = self.client.get(self.url, {'q': self.first_cnpj})
-
-        self.assertIn('page_obj'    , response.context)
-        self.assertIn('is_paginated', response.context)
-
-    def test_search_case_insensitive_for_corporate_name(self):
-        search_term = self.any_name[:5]
-
-        response_upper = self.client.get(self.url, {'q': search_term.upper()})
-        response_lower = self.client.get(self.url, {'q': search_term.lower()})
-
-        companies_upper = response_upper.context[COMPANIES_LIST_CONTEXT]
-        companies_lower = response_lower.context[COMPANIES_LIST_CONTEXT]
-
-        self.assertEqual(len(companies_upper), len(companies_lower))

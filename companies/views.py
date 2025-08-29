@@ -2,7 +2,8 @@ from django.db.models     import Q
 from django.http.response import Http404
 from django.views.generic import ListView
 
-from .models    import Companies
+from .models import Companies, \
+                    CompaniesFts
 from .constants import COMPANIES_LIST_PAGINATE, \
                        COMPANIES_LIST_CONTEXT
 
@@ -28,9 +29,12 @@ class CompaniesSearchView(CompaniesListView):
 
         queryset = super().get_queryset()
 
-        return queryset.filter(
-            Q(
-                Q(cnpj__startswith         =q) |
-                Q(corporate_name__icontains=q)
-            )
-        )
+        if q.isdigit() and len(q) == 8:
+            return queryset.filter(cnpj=q)
+
+        fts_matches = CompaniesFts.objects.extra(
+            where =['corporate_name MATCH %s'],
+            params=[f'{q}*']                  ,
+        ).values_list('rowid', flat=True)
+
+        return queryset.filter(rowid__in=fts_matches)

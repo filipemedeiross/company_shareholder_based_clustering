@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Companies(models.Model):
+    rowid          = models.IntegerField()
     cnpj           = models.TextField(primary_key=True)
     corporate_name = models.TextField(blank=True, null=True)
     capital        = models.IntegerField(blank=True, null=True)
