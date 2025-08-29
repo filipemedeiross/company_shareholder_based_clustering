@@ -26,6 +26,7 @@ data/
         companies.parquet
         partners.parquet
     sqlite/
+        db.sqlite3
         rfb.sqlite3
 ```
 
@@ -93,3 +94,14 @@ These indexes enable fast full-text searches using the `MATCH` operator, which s
 > - 🔍 Existence checks: Ensures entries from the Parquet files exist in the partners, companies, and business tables.
 > - 🔎 FTS5 validation: Confirms prefix-based matches using full-text search on name_partner and trade_name.
 > - ⏱️ Performance comparison: Benchmarks LIKE vs FTS5 MATCH to demonstrate the efficiency of full-text indexing.
+>
+> ℹ️ **Integration with Django Hermes**:
+>
+> The `rfb.sqlite3` database is used in **read-only mode** by the **companies** app of the django project **Hermes**, enabling fast queries over company and partner data. Other application data is stored separately in `data/sqlite/db.sqlite3`.  
+>  
+> Database routing between these two files is handled by the **companies database router**, ensuring that queries related to RFB data are directed exclusively to `rfb.sqlite3`.  
+>  
+> You can also test the django models mapped to the RFB tables by running:  
+> ```bash
+> python manage.py test companies.tests.test_orm
+> ```
