@@ -1,13 +1,15 @@
 import time
 import unittest
 
-from django.db         import connections
+from django.db         import connections  , \
+                              DatabaseError
 from django.test.utils import CaptureQueriesContext
 
-from companies.models import Companies  , \
-                             Partners   , \
-                             Business   , \
-                             PartnersFts, \
+from companies.models import Companies   , \
+                             Partners    , \
+                             Business    , \
+                             PartnersFts , \
+                             CompaniesFts, \
                              BusinessFts
 
 
@@ -63,8 +65,8 @@ class ORMPerformanceTests(unittest.TestCase):
 
     def test_get_cnpjs_by_name_partner(self):
         results = self._run_and_inspect(
-        lambda: Partners.objects.filter(name_partner="ERY FISCHER")
-                                .values_list("cnpj", flat=True)
+            lambda: Partners.objects.filter(name_partner="ERY FISCHER")
+                                    .values_list("cnpj", flat=True)
         )
         self.assertTrue(results)
 
@@ -114,6 +116,26 @@ class ORMPerformanceTests(unittest.TestCase):
         self.assertTrue(results)
 
 
+    def test_search_companies_fts_by_corporate_name(self):
+        results = self._run_and_inspect(
+            lambda: CompaniesFts.objects.extra(
+                where =["corporate_name MATCH %s"],
+                params=["CARLA*"],
+            )
+        )
+        self.assertTrue(results)
+
+
+    def test_search_companies_fts_by_full_corporate_name(self):
+        results = self._run_and_inspect(
+            lambda: CompaniesFts.objects.extra(
+                where =["corporate_name MATCH %s"],
+                params=["CARLA GARCIA"],
+            )
+        )
+        self.assertTrue(results)
+
+
     def test_search_business_fts_by_trade_name(self):
         results = self._run_and_inspect(
             lambda: BusinessFts.objects.extra(
@@ -132,3 +154,36 @@ class ORMPerformanceTests(unittest.TestCase):
             )
         )
         self.assertTrue(results)
+
+
+    def test_queries_use_rfb_db(self):
+        with CaptureQueriesContext(connections['rfb']) as ctx:
+            list(Companies.objects.filter(cnpj="41273789"))
+
+        self.assertTrue(ctx.captured_queries)
+
+
+    def test_prevent_insert_on_rfb(self):
+        company = Companies(
+            cnpj="99999999"      ,
+            corporate_name="TEST",
+            capital=1000         ,
+        )
+
+        with self.assertRaises(DatabaseError):
+            company.save(using="rfb")
+
+
+    def test_prevent_update_on_rfb(self):
+        obj = Companies.objects.using("rfb").first()
+        obj.corporate_name = "ALTER"
+
+        with self.assertRaises(DatabaseError):
+            obj.save(using="rfb")
+
+
+    def test_prevent_delete_on_rfb(self):
+        obj = Companies.objects.using("rfb").first()
+
+        with self.assertRaises(DatabaseError):
+            obj.delete(using="rfb")
