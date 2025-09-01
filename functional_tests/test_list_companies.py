@@ -26,18 +26,12 @@ class FunctionalTestBase(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        time.sleep(3)
-
-        service = Service("/snap/bin/geckodriver")
-        options = Options()
-        options.binary_location = "/snap/firefox/current/usr/lib/firefox/firefox"
+        time.sleep(1)
 
         cls.base_url = "http://127.0.0.1:8000"
-        cls.browser  = webdriver.Firefox(
-            service=service,
-            options=options,
-        )
-        cls.wait     = WebDriverWait(cls.browser, 10)
+        cls.browser  = webdriver.Firefox()
+
+        cls.wait = WebDriverWait(cls.browser, 10)
 
     @classmethod
     def tearDownClass(cls):
@@ -170,36 +164,40 @@ class ListCompaniesTests(FunctionalTestBase):
             By.CSS_SELECTOR,
             "input[name='q']"
         )
-
         placeholder = search_input.get_attribute("placeholder")
-        self.assertIsNotNone(placeholder, "Search input should have a placeholder")
+        aria_label  = search_input.get_attribute("aria-label" )
 
-        aria_label  = search_input.get_attribute("aria-label")
-        self.assertIsNotNone(aria_label, "Search input should have aria-label")
+        self.assertIsNotNone(placeholder, "Search input should have a placeholder")
+        self.assertIsNotNone(aria_label , "Search input should have aria-label"   )
 
 
 class SearchCompaniesTests(FunctionalTestBase):
     def test_search_page_loads_with_search_form(self):
         self.browser.get(
-            self.base_url + "/search/?p=00000000"
+            self.base_url + "/search/?q=00000000"
+        )
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".search-form")
+            )
         )
 
         search_form = self.browser.find_element(
             By.CSS_SELECTOR,
-            ".search-form"
+            ".search-form" ,
         )
-        self.assertTrue(search_form.is_displayed())
-
         search_input = self.browser.find_element(
-            By.CSS_SELECTOR,
-            "input[name='q']"
+            By.CSS_SELECTOR  ,
+            "input[name='q']",
         )
-        self.assertTrue(search_input.is_displayed())
-
         search_button = self.browser.find_element(
-            By.CSS_SELECTOR,
-            ".search-form button"
+            By.CSS_SELECTOR      ,
+            ".search-form button",
         )
+
+        self.assertTrue(search_form.is_displayed  ())
+        self.assertTrue(search_input.is_displayed ())
         self.assertTrue(search_button.is_displayed())
 
     def test_search_without_query_returns_404(self):
@@ -221,8 +219,8 @@ class SearchCompaniesTests(FunctionalTestBase):
         ).text
 
         search_input = self.browser.find_element(
-            By.CSS_SELECTOR,
-            "input[name='q']"
+            By.CSS_SELECTOR  ,
+            "input[name='q']",
         )
         search_button = self.browser.find_element(
             By.CSS_SELECTOR,
@@ -270,8 +268,8 @@ class SearchCompaniesTests(FunctionalTestBase):
             )
         )
         rows = self.browser.find_elements(
-            By.CSS_SELECTOR,
-            "#company-list .company-row"
+            By.CSS_SELECTOR             ,
+            "#company-list .company-row",
         )
         self.assertGreater(len(rows), 0, "No search results found")
 
@@ -285,4 +283,7 @@ class SearchCompaniesTests(FunctionalTestBase):
                 found_match = True
                 break
 
-        self.assertTrue(found_match, f"No company name contains '{search_term}'")
+        self.assertTrue(
+            found_match,
+            f"No company name contains '{search_term}'"
+        )
