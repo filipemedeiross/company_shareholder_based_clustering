@@ -88,32 +88,43 @@ body {
 }
 
 .search-form {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+    position: relative;
+    display: block;
+    width: 420px;
+    max-width: 90vw;
+    margin: 0 auto 12px;
 }
 
 .search-form input[type="text"] {
-    flex: 1;
-    min-width: 200px;
-    padding: 10px 12px;
+    width: 100%;
+    padding: 10px 0px 10px 16px;
     border: 1px solid var(--color-primary-50);
     border-radius: 8px;
-}
-.search-form button[type="submit"] {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 14px;
-    border: none;
-    border-radius: 8px;
-    background: var(--color-primary-600);
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
+    background: #fff;
 }
 
+.search-form button[type="submit"] {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-primary-600);
+    cursor: pointer;
+}
+.search-form button[type="submit"] i {
+    font-size: 18px;
+}
+.search-form button[type="submit"]:hover {
+    background: var(--color-primary-50);
+}
 
 /* Company list */
 
