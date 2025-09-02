@@ -14,7 +14,7 @@ class CompaniesBaseView(ListView):
     context_object_name = COMPANIES_LIST_CONTEXT
     paginate_by         = COMPANIES_LIST_PAGINATE
 
-    ordering    = ['cnpj']
+    ordering = ['cnpj']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
