@@ -1,6 +1,6 @@
 <div class="search-container centered">
 
-    <form class="search-form" method="get" action="{% url 'companies:search' %}">
+    <form class="search-form" action="{{ action }}">
         <input
             type="text"
             name="q"
@@ -12,5 +12,6 @@
             <i class="fa-solid fa-magnifying-glass"></i>
             Search
         </button>
+    </form>
 
 </div>

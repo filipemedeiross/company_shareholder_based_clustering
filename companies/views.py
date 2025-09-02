@@ -1,4 +1,4 @@
-from django.db.models     import Q
+from django.urls import reverse
 from django.http.response import Http404
 from django.views.generic import ListView
 
@@ -8,17 +8,28 @@ from .constants import COMPANIES_LIST_PAGINATE, \
                        COMPANIES_LIST_CONTEXT
 
 
-class CompaniesListView(ListView):
+class CompaniesBaseView(ListView):
     model = Companies
 
-    template_name       = 'companies/list.html'
     context_object_name = COMPANIES_LIST_CONTEXT
+    paginate_by         = COMPANIES_LIST_PAGINATE
 
-    paginate_by = COMPANIES_LIST_PAGINATE
     ordering    = ['cnpj']
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-class CompaniesSearchView(CompaniesListView):
+        context['form_action' ] = reverse('companies:search')
+        context['search_query'] = self.request.GET.get('q', '')
+
+        return context
+
+
+class CompaniesListView(CompaniesBaseView):
+    template_name = 'companies/list.html'
+
+
+class CompaniesSearchView(CompaniesBaseView):
     template_name = 'companies/search.html'
 
     def get_queryset(self):

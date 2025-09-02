@@ -1,6 +1,6 @@
 {% load humanize %}
 <section id="company-list" class="centered">
-    {% if companies %}
+    {% if objects %}
         <table class="company-table">
             <thead>
                 <tr>
@@ -10,11 +10,11 @@
                 </tr>
             </thead>
             <tbody>
-                {% for company in companies %}
+                {% for object in objects %}
                     <tr class="company-row">
-                        <td>{{ company.cnpj             }}</td>
-                        <td>{{ company.corporate_name   }}</td>
-                        <td>{{ company.capital|intcomma }}</td>
+                        <td>{{ object.cnpj             }}</td>
+                        <td>{{ object.corporate_name   }}</td>
+                        <td>{{ object.capital|intcomma }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

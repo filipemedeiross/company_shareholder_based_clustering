@@ -1,14 +1,14 @@
 {% extends 'companies/base.html' %}
 
 {% block content %}
-    {% include 'companies/partials/search_form.html' %}
-    {% include 'companies/partials/table.html'       %}
+    {% include 'companies/partials/search_form.html' with action=form_action %}
+    {% include 'companies/partials/table.html'       with objects=companies  %}
 
     {% if is_paginated %}
         <nav aria-label="pagination" class="centered">
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                    <a href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}">Previous</a>
                 {% endif %}
 
                 <span class="current">
@@ -16,7 +16,7 @@
                 </span>
 
                 {% if page_obj.has_next %}
-                    <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}">Next</a>
+                    <a href="?q={{ search_query }}&page={{ page_obj.next_page_number }}">Next</a>
                 {% endif %}
             </div>
         </nav>
