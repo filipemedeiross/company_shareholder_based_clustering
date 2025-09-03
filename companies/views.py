@@ -19,9 +19,13 @@ class CompaniesBaseView(ListView):
         context = super().get_context_data(**kwargs)
 
         context['form_action' ] = reverse('companies:search')
-        context['search_query'] = self.request.GET.get('q', '')
+        context['search_query'] = self.search_query
 
         return context
+
+    @property
+    def search_query(self):
+        return self.request.GET.get('q', '').strip()
 
 
 class CompaniesListView(CompaniesBaseView):
@@ -34,7 +38,7 @@ class CompaniesSearchView(CompaniesBaseView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        q = self.request.GET.get('q', '')
+        q = self.search_query
         if not q:
             return queryset.none()
 
