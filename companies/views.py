@@ -1,5 +1,4 @@
 from django.urls import reverse
-from django.http.response import Http404
 from django.views.generic import ListView
 
 from .models import Companies, \
@@ -33,12 +32,11 @@ class CompaniesSearchView(CompaniesBaseView):
     template_name = 'companies/search.html'
 
     def get_queryset(self):
-        q = self.request.GET.get('q', '')
-
-        if not q:
-            raise Http404
-
         queryset = super().get_queryset()
+
+        q = self.request.GET.get('q', '')
+        if not q:
+            return queryset.none()
 
         if q.isdigit() and len(q) == 8:
             return queryset.filter(cnpj=q)
@@ -49,3 +47,13 @@ class CompaniesSearchView(CompaniesBaseView):
         ).values_list('rowid', flat=True)
 
         return queryset.filter(rowid__in=fts_matches)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if not context['search_query']:
+            context['error_messages'] = [
+                'Please fill in the search field.',
+            ]
+
+        return context
