@@ -80,13 +80,22 @@ class TestCompaniesSearchView(unittest.TestCase):
         self.client = Client()
         self.url    = reverse('companies:search')
 
-    def test_search_without_query_returns_404(self):
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 404)
+    def test_search_without_query_returns_200_and_error_message(self):
+        response  = self.client.get(self.url)
+        context   = response.context
+        companies = context[COMPANIES_LIST_CONTEXT]
 
-    def test_search_with_empty_query_returns_404(self):
-        response = self.client.get(self.url, {'q': ''})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200 )
+        self.assertIn   ('errors', response.context)
+
+        self.assertEqual(len(companies), 0)
+
+    def test_search_with_spaces_only_returns_200_and_no_results(self):
+        response  = self.client.get(self.url, {'q': '   '})
+        companies = response.context[COMPANIES_LIST_CONTEXT]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(companies)      , 0  )
 
     def test_search_with_valid_query_returns_200(self):
         response = self.client.get(self.url, {'q': self.first_cnpj})
