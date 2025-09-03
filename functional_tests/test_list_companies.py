@@ -200,9 +200,26 @@ class SearchCompaniesTests(FunctionalTestBase):
         self.assertTrue(search_input.is_displayed ())
         self.assertTrue(search_button.is_displayed())
 
-    def test_search_without_query_returns_404(self):
-        self.browser.get(self.base_url + "/search/")
-        self.assertIn("404", self.browser.page_source)
+    def test_empty_search_shows_error_message_and_no_results(self):
+        self.browser.get(self.base_url + "/search/?q=")
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".search-form")
+            )
+        )
+
+        self.assertIn("Please fill in the search field.", self.browser.page_source)
+        self.assertIn("No companies found."             , self.browser.page_source)
+
+    def test_search_input_is_required_on_home(self):
+        self.browser.get(self.base_url + "/")
+
+        search_input = self.browser.find_element(
+            By.CSS_SELECTOR,
+            "input[name='q']"
+        )
+        self.assertEqual(search_input.get_attribute("required"), "true")
 
     def test_search_results_are_filtered(self):
         self.browser.get(self.base_url + "/")
