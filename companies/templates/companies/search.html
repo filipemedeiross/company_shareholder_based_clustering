@@ -1,8 +1,8 @@
 {% extends 'companies/base.html' %}
 
 {% block content %}
-    {% include 'companies/partials/search_form.html' with action=form_action %}
-    {% include 'companies/partials/table.html'       with objects=companies  %}
+    {% include 'companies/partials/form.html'  with action=form_action errors=error_messages %}
+    {% include 'companies/partials/table.html' with objects=companies %}
 
     {% if is_paginated %}
         <nav aria-label="pagination" class="centered">

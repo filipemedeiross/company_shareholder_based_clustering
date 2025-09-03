@@ -7,10 +7,21 @@
             value="{{ search_query }}"
             placeholder="Search for companies..."
             aria-label="search-companies"
+            required
         />
         <button type="submit" aria-label="search">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </form>
+
+    {% if errors %}
+        <div class="alert alert-error" role="alert">
+            <ul>
+                {% for message in errors %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
 
 </div>
