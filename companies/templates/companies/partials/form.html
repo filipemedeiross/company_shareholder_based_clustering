@@ -16,11 +16,9 @@
 
     {% if errors %}
         <div class="alert alert-error" role="alert">
-            <ul>
-                {% for message in errors %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
+            {% for message in errors %}
+                {{ message }}
+            {% endfor %}
         </div>
     {% endif %}
 
