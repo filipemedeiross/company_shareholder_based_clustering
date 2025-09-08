@@ -24,7 +24,6 @@ body {
         Arial              ,
         "Apple Color Emoji",
         "Segoe UI Emoji"   ;
-    margin: 24px;
     background: var(--color-bg  );
     color     : var(--color-text);
 }
@@ -50,7 +49,6 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.10);
     margin-bottom: 32px;
 }
 .top-bar-title {
@@ -100,7 +98,6 @@ body {
     padding: 10px 0px 10px 16px;
     border: 1px solid var(--color-primary-50);
     border-radius: 8px;
-    background: #fff;
 }
 
 .search-form button[type="submit"] {
@@ -132,7 +129,6 @@ body {
     width: 350px;
     max-width: 90vw;
     box-sizing: border-box;
-    margin: 24px auto;
     padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid var(--color-border);
