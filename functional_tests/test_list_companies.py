@@ -7,9 +7,6 @@ from selenium.webdriver.common.by  import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support    import expected_conditions as EC
 
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.firefox.options import Options
-
 
 class FunctionalTestBase(unittest.TestCase):
     @classmethod
@@ -40,58 +37,47 @@ class FunctionalTestBase(unittest.TestCase):
 
         super().tearDownClass()
 
+    def open_home(self, page="/"):
+        self.browser.get(self.base_url + page)
+
+    def find_css_element (self, value):
+        return self.browser.find_element (By.CSS_SELECTOR, value)
+
+    def find_css_elements(self, value):
+        return self.browser.find_elements(By.CSS_SELECTOR, value)
+
+    def get_search_elements(self):
+        return self.find_css_element("input[name='q']"    ), \
+               self.find_css_element(".search-form button")
+
+    def wait_for_company_list(self):
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "#company-list")
+            )
+        )
+
 
 class ListCompaniesTests(FunctionalTestBase):
     def test_home_companies_paginated_by_20(self):
-        self.browser.get(self.base_url + "/")
+        self.open_home()
+        self.wait_for_company_list()
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
+        rows      = self.find_css_elements("#company-list .company-row")
+        paginator = self.find_css_elements("nav[aria-label='pagination'], .pagination")
 
-        rows = self.browser.find_elements(
-            By.CSS_SELECTOR             ,
-            "#company-list .company-row",
-        )
-        self.assertEqual(
-            len(rows),
-            20       ,
-            f"Expected 20 companies on the page, but found {len(rows)}"
-        )
-
-        paginator = self.browser.find_elements(
-            By.CSS_SELECTOR                            ,
-            "nav[aria-label='pagination'], .pagination",
-        )
-        self.assertTrue(
-            paginator                    ,
-            "No pagination element found",
-        )
+        self.assertEqual(len(rows), 20, "Expected 20 companies on the page")
+        self.assertTrue (paginator,     "No pagination element found"      )
 
     def test_pagination_next_click_redirects_to_page_2(self):
-        self.browser.get(
-            self.base_url + "/"
-        )
+        self.open_home()
+        self.wait_for_company_list()
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
+        self.browser.find_element(
+            By.LINK_TEXT, "Next"
+        ).click()
 
-        next_link = self.browser.find_element(
-            By.LINK_TEXT,
-            "Next"      ,
-        )
-        next_link.click()
-
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
+        self.wait_for_company_list()
 
         current_url = self.browser.current_url
         self.assertIn(
@@ -101,27 +87,14 @@ class ListCompaniesTests(FunctionalTestBase):
         )
 
     def test_header_companies_click_returns_to_first_page(self):
-        self.browser.get(
-            self.base_url + "/?page=2"
-        )
+        self.open_home("/?page=2")
+        self.wait_for_company_list()
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
-
-        home_link = self.browser.find_element(
-            By.CSS_SELECTOR          ,
+        self.find_css_element(
             ".top-bar .top-bar-title",
-        )
-        home_link.click()
+        ).click()
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
+        self.wait_for_company_list()
 
         current_url = self.browser.current_url
         self.assertTrue(
@@ -135,19 +108,12 @@ class ListCompaniesTests(FunctionalTestBase):
         )
 
     def test_layout_and_styling_table_centered(self):
-        self.browser.get(
-            self.base_url + "/"
-        )
-
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list .company-table")
-            )
-        )
+        self.open_home()
+        self.wait_for_company_list()
 
         window = self.browser.get_window_size()
-        table  = self.browser.find_element(
-            By.CSS_SELECTOR, "#company-list .company-table"
+        table  = self.find_css_element(
+            "#company-list .company-table"
         ).rect
 
         self.assertAlmostEqual(
@@ -158,14 +124,11 @@ class ListCompaniesTests(FunctionalTestBase):
         )
 
     def test_search_form_placeholder_and_accessibility(self):
-        self.browser.get(self.base_url)
+        self.open_home()
 
-        search_input = self.browser.find_element(
-            By.CSS_SELECTOR,
-            "input[name='q']"
-        )
-        placeholder = search_input.get_attribute("placeholder")
-        aria_label  = search_input.get_attribute("aria-label" )
+        search_input = self.find_css_element ("input[name='q']")
+        placeholder  = search_input.get_attribute("placeholder")
+        aria_label   = search_input.get_attribute("aria-label" )
 
         self.assertIsNotNone(placeholder, "Search input should have a placeholder")
         self.assertIsNotNone(aria_label , "Search input should have aria-label"   )
@@ -173,89 +136,63 @@ class ListCompaniesTests(FunctionalTestBase):
 
 class SearchCompaniesTests(FunctionalTestBase):
     def test_search_page_loads_with_search_form(self):
-        self.browser.get(
-            self.base_url + "/search/?q=00000000"
-        )
+        self.open_home("/search/?q=00000000")
+        self.wait_for_company_list()
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, ".search-form")
-            )
-        )
-
-        search_form = self.browser.find_element(
-            By.CSS_SELECTOR,
-            ".search-form" ,
-        )
-        search_input = self.browser.find_element(
-            By.CSS_SELECTOR  ,
-            "input[name='q']",
-        )
-        search_button = self.browser.find_element(
-            By.CSS_SELECTOR      ,
-            ".search-form button",
-        )
+        search_form   = self.find_css_element(".search-form"   )
+        search_input  = self.find_css_element("input[name='q']")
+        search_button = self.find_css_element(".search-form button")
 
         self.assertTrue(search_form.is_displayed  ())
         self.assertTrue(search_input.is_displayed ())
         self.assertTrue(search_button.is_displayed())
 
     def test_empty_search_shows_error_message_and_no_results(self):
-        self.browser.get(self.base_url + "/search/?q=")
-
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, ".search-form")
-            )
-        )
+        self.open_home("/search/?q=")
+        self.wait_for_company_list()
 
         self.assertIn("Please fill in the search field.", self.browser.page_source)
         self.assertIn("No companies found."             , self.browser.page_source)
 
     def test_search_input_is_required_on_home(self):
-        self.browser.get(self.base_url + "/")
+        self.open_home()
 
-        search_input = self.browser.find_element(
-            By.CSS_SELECTOR,
-            "input[name='q']"
+        search_input = self.find_css_element("input[name='q']")
+        search_input.clear()
+
+        self.find_css_element(
+            ".search-form button"
+        ).click()
+
+        current_url = self.browser.current_url
+
+        self.assertFalse(
+            search_input.get_property("validity")["valid"],
+            "Expected input to be invalid when empty"
         )
-        self.assertEqual(search_input.get_attribute("required"), "true")
+        self.assertTrue(
+            current_url.endswith("/"),
+            f"Expected to remain on home page, but got redirected to {current_url}"
+        )
 
     def test_search_results_are_filtered(self):
-        self.browser.get(self.base_url + "/")
+        self.open_home()
+        self.wait_for_company_list()
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
-
-        first_cnpj = self.browser.find_element(
-            By.CSS_SELECTOR,
+        first_cnpj = self.find_css_element(
             "#company-list .company-row td:first-child"
         ).text
 
-        search_input = self.browser.find_element(
-            By.CSS_SELECTOR  ,
-            "input[name='q']",
-        )
-        search_button = self.browser.find_element(
-            By.CSS_SELECTOR,
-            ".search-form button"
-        )
-        search_input .send_keys(first_cnpj)
-        search_button.click()
+        search_input = self.find_css_element("input[name='q']")
+        search_input.send_keys(first_cnpj)
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
-        rows = self.browser.find_elements(
-            By.CSS_SELECTOR,
-            "#company-list .company-row"
-        )
-        self.assertGreater(len(rows), 0, "No search results found")
+        self.find_css_element(
+            ".search-form button"
+        ).click()
+
+        self.wait_for_company_list()
+
+        rows = self.find_css_elements("#company-list .company-row")
 
         found_match = False
         for row in rows:
@@ -267,28 +204,16 @@ class SearchCompaniesTests(FunctionalTestBase):
                 found_match = True
                 break
 
-        self.assertTrue(
-            found_match,
-            f"CNPJ does not start with {first_cnpj}"
-        )
+        self.assertGreater(len(rows), 0, "No search results found")
+        self.assertTrue   (found_match , f"CNPJ does not start with {first_cnpj}")
 
     def test_search_by_corporate_name(self):
         search_term = 'manutencao'
 
-        self.browser.get(
-            self.base_url + f"/search/?q={search_term}"
-        )
+        self.open_home(f"/search/?q={search_term}")
+        self.wait_for_company_list()
 
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#company-list")
-            )
-        )
-        rows = self.browser.find_elements(
-            By.CSS_SELECTOR             ,
-            "#company-list .company-row",
-        )
-        self.assertGreater(len(rows), 0, "No search results found")
+        rows = self.find_css_elements("#company-list .company-row")
 
         found_match = False
         for row in rows:
@@ -300,7 +225,5 @@ class SearchCompaniesTests(FunctionalTestBase):
                 found_match = True
                 break
 
-        self.assertTrue(
-            found_match,
-            f"No company name contains '{search_term}'"
-        )
+        self.assertGreater(len(rows), 0, "No search results found")
+        self.assertTrue   (found_match , f"No company name contains '{search_term}'")
