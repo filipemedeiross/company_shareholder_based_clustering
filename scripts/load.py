@@ -3,10 +3,11 @@ import pyarrow.parquet as pq
 
 
 def insert_parquet(
-    conn           ,
-    table_name     ,
-    parquet_file   ,
-    duplicates=None,
+    conn             ,
+    table_name       ,
+    parquet_file     ,
+    duplicates=None  ,
+    batch_size=32_768,
 ):
     print()
     print(f"📥 Loading and inserting data into '{table_name}' from Parquet (by row group)...")
@@ -15,10 +16,11 @@ def insert_parquet(
         seen = set()
 
     table = pq.ParquetFile(parquet_file)
-    for i in range(table.num_row_groups):
-        print(f"  • Processing row_group {i + 1}...")
+    for c, batch in enumerate(table.iter_batches(batch_size=batch_size)):
+        if (c % 50) == 0:
+            print(f"  • Processed {c} batches...")
 
-        df = table.read_row_group(i).to_pandas()
+        df = batch.to_pandas()
 
         for col in df.select_dtypes(include=["datetime64[ns]"]):
             df[col] = df[col].dt.strftime("%Y-%m-%d")
