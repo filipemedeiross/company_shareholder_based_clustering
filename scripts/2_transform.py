@@ -48,7 +48,7 @@ def fn_companies(df):
     )
 
     query = f"""
-        SELECT df.*
+        SELECT DISTINCT ON (cnpj) df.*
         FROM df
         SEMI JOIN read_parquet('{PARQUET_PARTNERS}') USING (cnpj)
     """
