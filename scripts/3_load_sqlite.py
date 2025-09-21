@@ -61,14 +61,9 @@ conn.commit()
 # ===========================
 # 🚀 Load and insert all data
 # ===========================
-insert_parquet(
-    conn             ,
-    'companies'      ,
-    PARQUET_COMPANIES,
-    duplicates='cnpj',
-)
-insert_parquet(conn, 'partners' , PARQUET_PARTNERS)
-insert_parquet(conn, 'business' , PARQUET_BUSINESS)
+insert_parquet(conn, 'companies', PARQUET_COMPANIES)
+insert_parquet(conn, 'partners' , PARQUET_PARTNERS )
+insert_parquet(conn, 'business' , PARQUET_BUSINESS )
 
 conn.commit()
 
