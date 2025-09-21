@@ -1,3 +1,4 @@
+import duckdb
 import pandas as pd
 
 from .process   import csv2parquet
@@ -18,6 +19,24 @@ from .constants import CHUNKSIZE,         \
                        PARQUET_BUSINESS
 
 
+con = duckdb.connect()
+
+
+def fn_partners(df):
+    df.dropna(inplace=True)
+
+    df.cnpj = df.cnpj.astype(str).str.zfill(8)
+    df.start_date = pd.to_datetime(
+        df
+        .start_date
+        .astype(str)   ,
+        format="%Y%m%d",
+        errors="coerce",
+    )
+
+    return df
+
+
 def fn_companies(df):
     df.cnpj = df.cnpj.astype(str).str.zfill(8)
     df.capital = (
@@ -28,7 +47,13 @@ def fn_companies(df):
         .astype('int64')
     )
 
-    return df
+    query = f"""
+        SELECT df.*
+        FROM df
+        SEMI JOIN read_parquet('{PARQUET_PARTNERS}') USING (cnpj)
+    """
+
+    return con.execute(query).df()
 
 
 def fn_business(df):
@@ -63,26 +88,35 @@ def fn_business(df):
         errors="coerce",
     )
 
-    return df
+    query = f"""
+        SELECT df.*
+        FROM df
+        SEMI JOIN read_parquet('{PARQUET_PARTNERS}') USING (cnpj)
+    """
 
-
-def fn_partners(df):
-    df.dropna(inplace=True)
-
-    df.cnpj = df.cnpj.astype(str).str.zfill(8)
-    df.start_date = pd.to_datetime(
-        df
-        .start_date
-        .astype(str)   ,
-        format="%Y%m%d",
-        errors="coerce",
-    )
-
-    return df
+    return con.execute(query).df()
 
 
 def main():
     PARQUET_DIR.mkdir(parents=True, exist_ok=True)
+
+    if PARQUET_PARTNERS.exists():
+        print('Skipping partners.parquet — already exists.')
+    else:
+        paths_partners = [
+            DICT_DIR['Socios'] / f'socios{i}.csv'
+            for i in range(10)
+        ]
+
+        csv2parquet(
+            PARQUET_PARTNERS     ,
+            paths_partners       ,
+            COLS_PARTNERS        ,
+            NAMES_PARTNERS       ,
+            CHUNKSIZE            ,
+            transform=fn_partners,
+            sort_by=SORT_PARTNERS,
+        )
 
     if PARQUET_COMPANIES.exists():
         print('Skipping companies.parquet — already exists.')
@@ -118,24 +152,6 @@ def main():
             CHUNKSIZE            ,
             transform=fn_business,
             sort_by=SORT_BUSINESS,
-        )
-
-    if PARQUET_PARTNERS.exists():
-        print('Skipping partners.parquet — already exists.')
-    else:
-        paths_partners = [
-            DICT_DIR['Socios'] / f'socios{i}.csv'
-            for i in range(10)
-        ]
-
-        csv2parquet(
-            PARQUET_PARTNERS     ,
-            paths_partners       ,
-            COLS_PARTNERS        ,
-            NAMES_PARTNERS       ,
-            CHUNKSIZE            ,
-            transform=fn_partners,
-            sort_by=SORT_PARTNERS,
         )
 
 
