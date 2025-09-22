@@ -1,0 +1,97 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+    initial = True
+
+    dependencies = []
+
+    operations = [
+        migrations.CreateModel(
+            name='Business',
+            fields=[
+                ('rowid', models.IntegerField(primary_key=True, serialize=False)),
+                ('cnpj_order', models.TextField()),
+                ('cnpj_dv', models.TextField()),
+                ('branch', models.BooleanField(blank=True, null=True)),
+                ('trade_name', models.TextField(blank=True, null=True)),
+                ('closing_date', models.DateField(blank=True, null=True)),
+                ('opening_date', models.DateField(blank=True, null=True)),
+                ('cep', models.TextField(blank=True, null=True)),
+            ],
+            options={
+                'verbose_name': 'Business',
+                'verbose_name_plural': 'Businesses',
+                'db_table': 'business',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='BusinessFts',
+            fields=[
+                ('rowid', models.IntegerField(primary_key=True, serialize=False)),
+                ('trade_name', models.TextField(blank=True, null=True)),
+            ],
+            options={
+                'verbose_name': 'Businesses FTS',
+                'verbose_name_plural': 'Businesses FTSs',
+                'db_table': 'business_fts',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Companies',
+            fields=[
+                ('rowid', models.IntegerField()),
+                ('cnpj', models.TextField(primary_key=True, serialize=False)),
+                ('corporate_name', models.TextField(blank=True, null=True)),
+                ('capital', models.IntegerField(blank=True, null=True)),
+            ],
+            options={
+                'verbose_name': 'Company',
+                'verbose_name_plural': 'Companies',
+                'db_table': 'companies',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='CompaniesFts',
+            fields=[
+                ('rowid', models.IntegerField(primary_key=True, serialize=False)),
+                ('corporate_name', models.TextField(blank=True, null=True)),
+            ],
+            options={
+                'verbose_name': 'Companies FTS',
+                'verbose_name_plural': 'Companies FTSs',
+                'db_table': 'companies_fts',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Partners',
+            fields=[
+                ('rowid', models.IntegerField(primary_key=True, serialize=False)),
+                ('name_partner', models.TextField(blank=True, null=True)),
+                ('start_date', models.DateField(blank=True, null=True)),
+            ],
+            options={
+                'verbose_name': 'Partner',
+                'verbose_name_plural': 'Partners',
+                'db_table': 'partners',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='PartnersFts',
+            fields=[
+                ('rowid', models.IntegerField(primary_key=True, serialize=False)),
+                ('name_partner', models.TextField(blank=True, null=True)),
+            ],
+            options={
+                'verbose_name': 'Partners FTS',
+                'verbose_name_plural': 'Partners FTSs',
+                'db_table': 'partners_fts',
+                'managed': False,
+            },
+        ),
+    ]

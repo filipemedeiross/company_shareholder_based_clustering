@@ -43,14 +43,14 @@ class ORMPerformanceTests(unittest.TestCase):
 
     def test_get_company_by_cnpj(self):
         results = self._run_and_inspect(
-            lambda: Companies.objects.filter(cnpj="41273789")
+            lambda: Companies.objects.filter(cnpj="00000000")
         )
         self.assertTrue(results)
 
 
     def test_get_company_by_corporate_name(self):
         results = self._run_and_inspect(
-            lambda: Companies.objects.filter(corporate_name="CARLA GARCIA")
+            lambda: Companies.objects.filter(corporate_name="BANCO DO BRASIL SA")
         )
         self.assertTrue(results)
 
@@ -73,7 +73,7 @@ class ORMPerformanceTests(unittest.TestCase):
 
     def test_get_business_by_cnpj(self):
         results = self._run_and_inspect(
-            lambda: Business.objects.filter(cnpj="41273789")
+            lambda: Business.objects.filter(cnpj="00000000")
         )
         self.assertTrue(results)
 
@@ -81,9 +81,9 @@ class ORMPerformanceTests(unittest.TestCase):
     def test_get_business_by_cnpj_combination(self):
         results = self._run_and_inspect(
             lambda: Business.objects.filter(
-                cnpj="21368132"  ,
-                cnpj_order="0001",
-                cnpj_dv="40"     ,
+                cnpj="00000000"  ,
+                cnpj_order="0034",
+                cnpj_dv="50"     ,
             )
         )
         self.assertTrue(results)
