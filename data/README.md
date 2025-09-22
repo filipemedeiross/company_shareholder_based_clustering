@@ -60,7 +60,7 @@ After downloading and extracting the raw CSV files, you can transform the data i
 > Run the tests with:
 > 
 >```bash
->python -m unittest tests.test_parquet.py
+>python -m unittest tests.test_parquet
 >```
 
 ### 🗃️ SQLITE DATABASE
@@ -97,11 +97,16 @@ These indexes enable fast full-text searches using the `MATCH` operator, which s
 
 > ℹ️ **Integration with Django Hermes**:
 >
-> The `rfb.sqlite3` database is used in **read-only mode** by the **companies** app of the django project **Hermes**, enabling fast queries over company and partner data. Other application data is stored separately in `data/sqlite/db.sqlite3`.  
->  
-> Database routing between these two files is handled by the **companies database router**, ensuring that queries related to RFB data are directed exclusively to `rfb.sqlite3`.  
->  
-> You can also test the django models mapped to the RFB tables by running:  
+> The `rfb.sqlite3` database is used in **read-only mode** by the **companies** app of the django project **Hermes**, enabling fast queries over company and partner data. Other application data is stored separately in `data/sqlite/db.sqlite3`.
+>
+> Database routing between these two files is handled by the **companies database router**, ensuring that queries related to RFB data are directed exclusively to `rfb.sqlite3`.
+>
+> Before running the ORM tests, make sure the migrations have been applied:
+> ```bash
+> python manage.py migrate
+> ```
+>
+> You can also test the django models mapped to the RFB tables by running:
 > ```bash
 > python manage.py test companies.tests.test_orm
 > ```
