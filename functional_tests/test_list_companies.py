@@ -1,3 +1,4 @@
+import sys
 import time
 import unittest
 import subprocess
@@ -15,7 +16,7 @@ class FunctionalTestBase(unittest.TestCase):
 
         cls.server = subprocess.Popen(
             [
-                "python"        ,
+                cls.get_python(),
                 "manage.py"     ,
                 "runserver"     ,
                 "127.0.0.1:8000",
@@ -56,6 +57,14 @@ class FunctionalTestBase(unittest.TestCase):
                 (By.CSS_SELECTOR, "#company-list")
             )
         )
+
+    @staticmethod
+    def get_python():
+        if (hasattr(sys, "real_prefix")) or \
+           (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix):
+            return sys.executable
+
+        return "python"
 
 
 class ListCompaniesTests(FunctionalTestBase):
