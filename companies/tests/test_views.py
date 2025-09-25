@@ -84,11 +84,17 @@ class TestCompaniesSearchView(unittest.TestCase):
         response  = self.client.get(self.url)
         context   = response.context
         companies = context[COMPANIES_LIST_CONTEXT]
+        messages  = list(context['messages'])
 
         self.assertEqual(response.status_code, 200 )
-        self.assertIn   ('errors', response.context)
+        self.assertEqual(len(companies)      , 0   )
 
-        self.assertEqual(len(companies), 0)
+        self.assertEqual(len(messages)    , 1 )
+        self.assertEqual(messages[0].level, 40)
+        self.assertEqual(
+            messages[0].message               ,
+            'Please fill in the search field.',
+        )
 
     def test_search_with_spaces_only_returns_200_and_no_results(self):
         response  = self.client.get(self.url, {'q': '   '})

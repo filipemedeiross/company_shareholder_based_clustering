@@ -1,7 +1,7 @@
 {% extends 'companies/base.html' %}
 
 {% block content %}
-    {% include 'companies/partials/form.html'  with action=form_action errors=error_messages %}
+    {% include 'companies/partials/form.html'  with action=form_action messages=messages %}
     {% include 'companies/partials/table.html' with objects=companies %}
 
     {% if is_paginated %}

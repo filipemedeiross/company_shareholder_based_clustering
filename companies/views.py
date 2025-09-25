@@ -1,4 +1,5 @@
-from django.urls import reverse
+from django.urls          import reverse
+from django.contrib       import messages
 from django.views.generic import ListView
 
 from .models import Companies, \
@@ -35,6 +36,15 @@ class CompaniesListView(CompaniesBaseView):
 class CompaniesSearchView(CompaniesBaseView):
     template_name = 'companies/search.html'
 
+    def get(self, request, *args, **kwargs):
+        if not self.search_query:
+            messages.error(
+                request,
+                'Please fill in the search field.'
+            )
+
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         queryset = super().get_queryset()
 
@@ -51,13 +61,3 @@ class CompaniesSearchView(CompaniesBaseView):
         ).values_list('rowid', flat=True)
 
         return queryset.filter(rowid__in=fts_matches)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if not context['search_query']:
-            context['error_messages'] = [
-                'Please fill in the search field.',
-            ]
-
-        return context
