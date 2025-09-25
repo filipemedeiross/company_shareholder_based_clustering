@@ -144,7 +144,6 @@ body {
     box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
     padding: 12px;
     overflow-x: auto;
-    margin-top: 0;
 }
 
 .company-table {
@@ -167,9 +166,6 @@ body {
 }
 
 .company-row:last-child td {
-    border-bottom: none;
-}
-.company-row:last-child {
     border-bottom: none;
 }
 
