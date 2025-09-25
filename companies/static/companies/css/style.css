@@ -172,14 +172,15 @@ body {
 /* Pagination */
 
 nav[aria-label="pagination"] {
-    margin-top: 16px;
+    margin-top: 32px;
+    margin-bottom: 16px;
 }
 
 .pagination {
     display: flex;
-    gap: 8px;
-    margin-top: 16px;
+    align-items: center;
     justify-content: center;
+    gap: 8px;
 }
 
 .pagination a {
