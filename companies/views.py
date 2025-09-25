@@ -4,6 +4,7 @@ from django.views.generic import ListView
 
 from .models import Companies, \
                     CompaniesFts
+from .paginator import CursorPaginator
 from .constants import COMPANIES_LIST_PAGINATE, \
                        COMPANIES_LIST_CONTEXT
 
@@ -14,14 +15,26 @@ class CompaniesBaseView(ListView):
     context_object_name = COMPANIES_LIST_CONTEXT
     paginate_by         = COMPANIES_LIST_PAGINATE
 
-    ordering = ['cnpj']
+    ordering = 'cnpj'
+
+    def get_queryset(self):
+        return super().get_queryset().order_by(self.ordering)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['form_action' ] = reverse('companies:search')
-        context['search_query'] = self.search_query
+        qs = self.get_queryset()
+        paginator = CursorPaginator(qs, self.paginate_by, ordering=self.ordering)
 
+        after = self.request.GET.get("after")
+        before = self.request.GET.get("before")
+
+        page = paginator.page(after=after, before=before)
+
+        context[self.context_object_name] = page.object_list
+        context["page_obj"] = page
+        context["form_action"] = reverse("companies:search")
+        context["search_query"] = self.search_query
         return context
 
     @property

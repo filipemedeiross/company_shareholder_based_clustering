@@ -78,22 +78,18 @@ class ListCompaniesTests(FunctionalTestBase):
         self.assertEqual(len(rows), 20, "Expected 20 companies on the page")
         self.assertTrue (paginator,     "No pagination element found"      )
 
-    def test_pagination_next_click_redirects_to_page_2(self):
+    def test_pagination_next_click_redirects_with_after(self):
         self.open_home()
         self.wait_for_company_list()
 
-        self.browser.find_element(
-            By.LINK_TEXT, "Next"
-        ).click()
+        next_link = self.browser.find_element(By.LINK_TEXT, "Next")
+        self.assertIn("after=", next_link.get_attribute("href"))
 
+        next_link.click()
         self.wait_for_company_list()
 
         current_url = self.browser.current_url
-        self.assertIn(
-            "?page=2"  ,
-            current_url,
-            f"Expected redirect to page 2, got: {current_url}"
-        )
+        self.assertIn("after=", current_url, f"Expected redirect with after param, got: {current_url}")
 
     def test_header_companies_click_returns_to_first_page(self):
         self.open_home("/?page=2")

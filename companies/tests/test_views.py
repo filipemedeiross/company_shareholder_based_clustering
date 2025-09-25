@@ -34,10 +34,16 @@ class TestCompaniesListView(unittest.TestCase):
         )
         self.assertEqual(cnpjs, expected_cnpjs)
 
-    def test_pagination_works_on_second_page(self):
-        response = self.client.get(self.url + '?page=2')
-        context  = response.context
-        self.assertEqual(context['page_obj'].number, 2)
+    def test_pagination_works_with_after(self):
+        response_first = self.client.get(self.url)
+        page_first     = response_first.context['page_obj']
+
+        after_cursor = page_first.next_cursor
+        response_next = self.client.get(f"{self.url}?after={after_cursor}")
+        page_next     = response_next.context['page_obj']
+
+        self.assertTrue(page_first.has_next, "Expected first page to have next page")
+        self.assertTrue(page_next.has_previous, "Expected second page to have previous page")
 
     def test_context_object_name_is_used(self):
         response = self.client.get(self.url)
