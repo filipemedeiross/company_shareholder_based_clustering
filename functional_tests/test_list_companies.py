@@ -82,17 +82,22 @@ class ListCompaniesTests(FunctionalTestBase):
         self.open_home()
         self.wait_for_company_list()
 
-        next_link = self.browser.find_element(By.LINK_TEXT, "Next")
-        self.assertIn("after=", next_link.get_attribute("href"))
-
+        next_link = self.browser.find_element (By.LINK_TEXT, "Next")
+        next_href = next_link   .get_attribute("href")
         next_link.click()
+
         self.wait_for_company_list()
 
-        current_url = self.browser.current_url
-        self.assertIn("after=", current_url, f"Expected redirect with after param, got: {current_url}")
+        self.assertIn("after=", next_href)
+        self.assertIn("after=", self.browser.current_url)
 
     def test_header_companies_click_returns_to_first_page(self):
-        self.open_home("/?page=2")
+        self.open_home()
+        self.wait_for_company_list()
+
+        next_link = self.browser.find_element(By.LINK_TEXT, "Next")
+        next_link.click()
+
         self.wait_for_company_list()
 
         self.find_css_element(
@@ -107,7 +112,7 @@ class ListCompaniesTests(FunctionalTestBase):
             f"Expected to be back on first page: got {current_url}",
         )
         self.assertNotIn(
-            "page="    ,
+            "before="  ,
             current_url,
             f"Expected no page param on home",
         )

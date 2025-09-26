@@ -38,12 +38,13 @@ class TestCompaniesListView(unittest.TestCase):
         response_first = self.client.get(self.url)
         page_first     = response_first.context['page_obj']
 
-        after_cursor = page_first.next_cursor
-        response_next = self.client.get(f"{self.url}?after={after_cursor}")
-        page_next     = response_next.context['page_obj']
+        response_next = self.client.get(
+            f"{self.url}?after={page_first.next_cursor}"
+        )
+        page_next = response_next.context['page_obj']
 
-        self.assertTrue(page_first.has_next, "Expected first page to have next page")
-        self.assertTrue(page_next.has_previous, "Expected second page to have previous page")
+        self.assertTrue(page_first.has_next    , "Expected first page to have next page"     )
+        self.assertTrue(page_next .has_previous, "Expected second page to have previous page")
 
     def test_context_object_name_is_used(self):
         response = self.client.get(self.url)
