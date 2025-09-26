@@ -1,4 +1,5 @@
-from django.db import models
+from django.db   import models
+from django.urls import reverse
 
 
 class Companies(models.Model):
@@ -15,6 +16,9 @@ class Companies(models.Model):
 
     def __str__(self):
         return f"{self.cnpj}"
+
+    def get_absolute_url(self):
+        return reverse('companies:detail', kwargs={'cnpj': self.cnpj})
 
     rfb = True
 
