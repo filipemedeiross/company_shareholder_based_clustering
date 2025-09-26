@@ -1,0 +1,95 @@
+{% extends 'companies/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="centered">
+    <div class="breadcrumb">
+        <a href="{% url 'companies:list' %}">Companies</a> >
+        <span>{{ company }}</span>
+    </div>
+
+    <div class="company-detail">
+        <h2>{{ company.corporate_name|default:"N/A" }}</h2>
+        <div class="company-info">
+            <div class="info-item">
+                <strong>CNPJ:</strong> {{ company }}
+            </div>
+            <div class="info-item">
+                <strong>Capital:</strong> R$ {{ company.capital|intcomma|default:"N/A" }}
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Businesses</h3>
+        {% if business %}
+            <div class="table-scroll">
+                <table class="company-table">
+                    <thead>
+                        <tr>
+                            <th>CNPJ</th>
+                            <th>Trade name</th>
+                            <th>Opening Date</th>
+                            <th>Closing Date</th>
+                            <th>CEP</th>
+                            <th>Branch</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for establishment in business %}
+                            <tr>
+                                <td>{{ establishment }}</td>
+                                <td>{{ establishment.trade_name|default:"N/A" }}</td>
+                                <td>{{ establishment.opening_date|date:"d/m/Y"|default:"N/A" }}</td>
+                                <td>{{ establishment.closing_date|date:"d/m/Y"|default:"Ativo" }}</td>
+                                <td>{{ establishment.cep|default:"N/A" }}</td>
+                                <td>
+                                    {% if establishment.branch %}
+                                        <span class="badge main">No</span>
+                                    {% else %}
+                                        <span class="badge branch">Yes</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No business found.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Partners</h3>
+        {% if partners %}
+            <div class="table-scroll">
+                <table class="company-table">
+                    <thead>
+                        <tr>
+                            <th>Name Partner</th>
+                            <th>Start Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for partner in partners %}
+                            <tr>
+                                <td>{{ partner.name_partner|default:"N/A" }}</td>
+                                <td>{{ partner.start_date|date:"d/m/Y"|default:"N/A" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No partner found.</p>
+        {% endif %}
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'companies:list' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Home
+        </a>
+    </div>
+</div>
+{% endblock %}
