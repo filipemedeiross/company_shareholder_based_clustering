@@ -12,7 +12,7 @@
             <tbody>
                 {% for object in objects %}
                     <tr class="company-row">
-                        <td>{{ object.cnpj             }}</td>
+                        <td><a href="{{ object.get_absolute_url }}">{{ object.cnpj }}</a></td>
                         <td>{{ object.corporate_name   }}</td>
                         <td>{{ object.capital|intcomma }}</td>
                     </tr>
