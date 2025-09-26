@@ -8,7 +8,7 @@
         <nav aria-label="pagination" class="centered">
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?q={{ search_query }}&before={{ page_obj.prev_cursor }}">Previous</a>
+                    <a href="?before={{ page_obj.prev_cursor }}">Previous</a>
                 {% endif %}
 
                 <span class="current">
@@ -16,7 +16,7 @@
                 </span>
 
                 {% if page_obj.has_next %}
-                    <a href="?q={{ search_query }}&after={{ page_obj.next_cursor }}">Next</a>
+                    <a href="?after={{ page_obj.next_cursor }}">Next</a>
                 {% endif %}
             </div>
         </nav>

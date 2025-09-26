@@ -12,29 +12,36 @@ from .constants import COMPANIES_LIST_PAGINATE, \
 class CompaniesBaseView(ListView):
     model = Companies
 
+    paginate_by = None
+    ordering    = 'cnpj'
+
     context_object_name = COMPANIES_LIST_CONTEXT
-    paginate_by         = COMPANIES_LIST_PAGINATE
-
-    ordering = 'cnpj'
-
-    def get_queryset(self):
-        return super().get_queryset().order_by(self.ordering)
+    per_page            = COMPANIES_LIST_PAGINATE
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = {**kwargs}
 
-        qs = self.get_queryset()
-        paginator = CursorPaginator(qs, self.paginate_by, ordering=self.ordering)
+        paginator = CursorPaginator(
+            self.get_queryset()   ,
+            self.per_page         ,
+            ordering=self.ordering,
+        )
+        page = paginator.page(
+            after =self.request.GET.get("after" ),
+            before=self.request.GET.get("before"),
+        )
 
-        after = self.request.GET.get("after")
-        before = self.request.GET.get("before")
+        context.update({
+            "page_obj"     : page,
+            "is_paginated" : page.has_next or page.has_previous,
+            self.context_object_name : page.object_list,
+        })
 
-        page = paginator.page(after=after, before=before)
+        context.update({
+            "form_action"  : reverse("companies:search"),
+            "search_query" : self.search_query          ,
+        })
 
-        context[self.context_object_name] = page.object_list
-        context["page_obj"] = page
-        context["form_action"] = reverse("companies:search")
-        context["search_query"] = self.search_query
         return context
 
     @property
