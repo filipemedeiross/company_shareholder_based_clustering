@@ -1,8 +1,11 @@
 from django.urls          import reverse
 from django.contrib       import messages
 from django.views.generic import ListView
+from django.shortcuts     import get_object_or_404
 
-from .models import Companies, \
+from .models import Business , \
+                    Partners , \
+                    Companies, \
                     CompaniesFts
 from .paginator import CursorPaginator
 from .constants import COMPANIES_LIST_PAGINATE, \
@@ -81,3 +84,40 @@ class CompaniesSearchView(CompaniesBaseView):
         ).values_list('rowid', flat=True)
 
         return queryset.filter(rowid__in=fts_matches)
+
+
+class CompaniesDetailView(ListView):
+    template_name = 'companies/detail.html'
+    context_object_name = 'establishments'
+
+    def get_queryset(self):
+        cnpj = self.kwargs.get('cnpj')
+        cnpj_base = cnpj[:8]
+        return Companies.objects.filter(cnpj=cnpj_base)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cnpj = self.kwargs.get('cnpj')
+        company = get_object_or_404(Companies, cnpj=cnpj)
+        cnpj_base = cnpj[:8]
+        partners = Partners.objects.filter(cnpj_base=cnpj_base)
+        context['company'] = company
+        context['partners'] = partners
+        context['cnpj_base'] = cnpj_base
+        return context
+
+'''
+# ...existing code...
+from .views import CompaniesDetailView
+# ...existing code...
+
+urlpatterns = [
+    # ...existing code...
+    path('detail/<str:cnpj>/', CompaniesDetailView.as_view(), name='detail'),
+]
+
+# ...existing code...
+<a href="{% url 'companies:detail' cnpj=company.cnpj %}">{{ company.cnpj }}</a>
+
+get_absolute_url nos models (seria interessante)?
+'''
