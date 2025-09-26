@@ -1,7 +1,7 @@
-from django.urls          import reverse
-from django.contrib       import messages
-from django.views.generic import ListView
-from django.shortcuts     import get_object_or_404
+from django.urls    import reverse
+from django.contrib import messages
+from django.views.generic import ListView, \
+                                 DetailView
 
 from .models import Business , \
                     Partners , \
@@ -86,38 +86,20 @@ class CompaniesSearchView(CompaniesBaseView):
         return queryset.filter(rowid__in=fts_matches)
 
 
-class CompaniesDetailView(ListView):
-    template_name = 'companies/detail.html'
-    context_object_name = 'establishments'
+class CompaniesDetailView(DetailView):
+    model = Companies
 
-    def get_queryset(self):
-        cnpj = self.kwargs.get('cnpj')
-        cnpj_base = cnpj[:8]
-        return Companies.objects.filter(cnpj=cnpj_base)
+    template_name = 'companies/detail.html'
+    context_object_name = 'company'
+
+    slug_field = 'cnpj'
+    slug_url_kwarg = 'cnpj'
 
     def get_context_data(self, **kwargs):
+        cnpj = self.object.cnpj
+
         context = super().get_context_data(**kwargs)
-        cnpj = self.kwargs.get('cnpj')
-        company = get_object_or_404(Companies, cnpj=cnpj)
-        cnpj_base = cnpj[:8]
-        partners = Partners.objects.filter(cnpj_base=cnpj_base)
-        context['company'] = company
-        context['partners'] = partners
-        context['cnpj_base'] = cnpj_base
+        context['business'] = Business.objects.filter(cnpj=cnpj)
+        context['partners'] = Partners.objects.filter(cnpj=cnpj)
+
         return context
-
-'''
-# ...existing code...
-from .views import CompaniesDetailView
-# ...existing code...
-
-urlpatterns = [
-    # ...existing code...
-    path('detail/<str:cnpj>/', CompaniesDetailView.as_view(), name='detail'),
-]
-
-# ...existing code...
-<a href="{% url 'companies:detail' cnpj=company.cnpj %}">{{ company.cnpj }}</a>
-
-get_absolute_url nos models (seria interessante)?
-'''
