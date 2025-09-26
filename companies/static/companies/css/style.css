@@ -67,8 +67,16 @@ body {
     cursor: pointer;
 }
 .top-bar-title a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     text-decoration: none;
     color: #fff;
+}
+
+.logo {
+    max-width: 60px;
+    height: auto;
 }
 
 /* Search */

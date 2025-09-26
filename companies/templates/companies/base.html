@@ -8,6 +8,7 @@
 
         <title>Hermes</title>
 
+        <link rel="icon" href="{% static 'companies/images/hermes_favicon.jpg' %}">
         <link rel="stylesheet" href="{% static 'companies/css/style.css' %}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" referrerpolicy="no-referrer" />
     </head>
@@ -16,7 +17,7 @@
         <header class="top-bar">
             <h1 class="top-bar-title">
                 <a href="{% url 'companies:list' %}">
-                    <i class="fa-solid fa-chart-line"></i> Hermes
+                    <img src="{% static 'companies/images/hermes_logo.png' %}" alt="Hermes Logo" class="logo"> Hermes
                 </a>
             </h1>
         </header>
