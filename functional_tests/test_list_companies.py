@@ -78,6 +78,22 @@ class ListCompaniesTests(FunctionalTestBase):
         self.assertEqual(len(rows), 20, "Expected 20 companies on the page")
         self.assertTrue (paginator,     "No pagination element found"      )
 
+    def test_company_row_click_navigates_to_detail_page(self):
+        self.open_home()
+        self.wait_for_company_list()
+
+        company_link = self.find_css_element("#company-list .company-row td a")
+        company_cnpj = company_link.text
+        company_link.click()
+
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".company-detail")
+            )
+        )
+
+        self.assertIn(f"/detail/{company_cnpj}/", self.browser.current_url)
+
     def test_pagination_next_click_redirects_with_after(self):
         self.open_home()
         self.wait_for_company_list()
@@ -237,3 +253,67 @@ class SearchCompaniesTests(FunctionalTestBase):
 
         self.assertGreater(len(rows), 0, "No search results found")
         self.assertTrue   (found_match , f"No company name contains '{search_term}'")
+
+
+class CompanyDetailTests(FunctionalTestBase):
+    cnpj = "68772011"
+
+    def test_detail_page_shows_company_information(self):
+        self.open_home(f"/detail/{self.cnpj}/")
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".company-detail")
+            )
+        )
+
+        company_info = self.find_css_element(".company-info")
+
+        self.assertIsNotNone(company_info)
+        self.assertIn(
+            self.cnpj,
+            company_info.text
+        )
+
+    def test_detail_page_shows_business_information(self):
+        self.open_home(f"/detail/{self.cnpj}/")
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".company-detail")
+            )
+        )
+
+        business_section = self.browser.find_element(
+            By.XPATH,
+            "//div[contains(@class, 'section')][.//h3[normalize-space(text())='Businesses']]"
+        )
+        business_rows    = business_section.find_elements(
+            By.CSS_SELECTOR,
+            ".company-table tbody tr"
+        )
+
+        if business_rows:
+            self.assertGreater(len(business_rows), 0)
+        else:
+            self.assertIn("No business found.", business_section.text)
+
+    def test_detail_page_shows_partners_information(self):
+        self.open_home(f"/detail/{self.cnpj}/")
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".company-detail")
+            )
+        )
+
+        partner_section = self.browser.find_element(
+            By.XPATH,
+            "//div[contains(@class, 'section')][.//h3[normalize-space(text())='Partners']]"
+        )
+        partner_rows = partner_section.find_elements(
+            By.CSS_SELECTOR,
+            ".company-table tbody tr"
+        )
+
+        if partner_rows:
+            self.assertGreater(len(partner_rows), 0)
+        else:
+            self.assertIn("No partner found.", partner_section.text)
