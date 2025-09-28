@@ -3,7 +3,9 @@ import unittest
 from django.test import Client
 from django.urls import reverse
 
-from companies.models    import Companies
+from companies.models import Companies, \
+                             Business , \
+                             Partners
 from companies.constants import COMPANIES_LIST_PAGINATE, \
                                 COMPANIES_LIST_CONTEXT
 
@@ -178,3 +180,75 @@ class TestCompaniesSearchView(unittest.TestCase):
         ]
 
         self.assertIn('companies/search.html', template_names)
+
+
+class TestCompaniesDetailView(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        cls.cnpj = (
+            Companies
+            .objects
+            .order_by('cnpj')
+            .first()
+            .cnpj
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url    = reverse(
+            'companies:detail',
+            kwargs={'cnpj': self.cnpj}
+        )
+
+    def test_detail_view_uses_correct_template(self):
+        response = self.client.get(self.url)
+
+        template_names = [
+            t.name
+            for t in response.templates
+            if t.name
+        ]
+
+        self.assertEqual(response.status_code   , 200)
+        self.assertIn   ('companies/detail.html', template_names)
+
+    def test_context_contains_company_data(self):
+        response = self.client.get(self.url)
+        context  = response.context
+
+        self.assertIn('company', context)
+        self.assertEqual(
+            context['company'].cnpj, self.cnpj
+        )
+
+    def test_context_contains_business_data(self):
+        response = self.client.get(self.url)
+        context  = response.context
+
+        self.assertIn('business', context)
+        self.assertEqual(
+            list(context['business']),
+            list(Business.objects.filter(cnpj=self.cnpj))
+        )
+
+    def test_context_contains_partners_data(self):
+        response = self.client.get(self.url)
+        context  = response.context
+
+        self.assertIn('partners', context)
+        self.assertEqual(
+            list(context['partners']),
+            list(Partners.objects.filter(cnpj=self.cnpj))
+        )
+
+    def test_nonexistent_cnpj_returns_404(self):
+        response = self.client.get(
+            reverse(
+                'companies:detail',
+                kwargs={'cnpj': '99999999'}
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)

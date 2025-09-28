@@ -121,6 +121,8 @@ print()
 print("⚙️ Creating indexes and FTS5 virtual tables for text search...")
 print()
 
+cursor.execute('CREATE INDEX IF NOT EXISTS idx_partners_cnpj ON partners(cnpj)')
+cursor.execute('CREATE INDEX IF NOT EXISTS idx_business_cnpj ON business(cnpj)')
 cursor.execute('CREATE INDEX IF NOT EXISTS idx_partners_start_date ON partners(start_date)')
 cursor.execute('CREATE INDEX IF NOT EXISTS idx_business_opening_closing ON business(opening_date, closing_date)')
 
