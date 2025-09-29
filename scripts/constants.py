@@ -10,6 +10,8 @@ TMP_DIR     = ROOT_DIR / 'tmp'
 DATA_DIR    = ROOT_DIR / 'data'
 CSV_DIR     = DATA_DIR / 'csv'
 PARQUET_DIR = DATA_DIR / 'parquet'
+SQLITE_DIR  = DATA_DIR / 'sqlite'
+DUCKDB_DIR  = DATA_DIR / 'duckdb'
 
 DICT_DIR = {
     'Socios'          : CSV_DIR / 'socios'          ,
@@ -17,7 +19,8 @@ DICT_DIR = {
     'Estabelecimentos': CSV_DIR / 'estabelecimentos',
 }
 
-SQLITE_PATH = DATA_DIR / 'sqlite/rfb.sqlite3'
+SQLITE_PATH = SQLITE_DIR / 'rfb.sqlite3'
+DUCKDB_PATH = DUCKDB_DIR / 'rfb.duckdb'
 PARQUET_PARTNERS  = PARQUET_DIR / 'partners.parquet'
 PARQUET_COMPANIES = PARQUET_DIR / 'companies.parquet'
 PARQUET_BUSINESS  = PARQUET_DIR / 'business.parquet'

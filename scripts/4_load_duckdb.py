@@ -1,12 +1,10 @@
 import duckdb
 
 from .load import measure_query_time
-from .constants import DATA_DIR   , \
+from .constants import DUCKDB_PATH, \
+                       DUCKDB_DIR , \
                        SQLITE_PATH
 
-
-DUCKDB_DIR  = DATA_DIR   / 'duckdb'
-DUCKDB_PATH = DUCKDB_DIR / 'rfb.duckdb'
 
 DUCKDB_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -45,7 +43,7 @@ measure_query_time(
     '''SELECT COUNT(*)
        FROM partners
        WHERE name_partner LIKE 'João%' ''',
-    "partners.name_partner (before index)"
+    "partners.name_partner"
 )
 
 measure_query_time(
@@ -53,7 +51,7 @@ measure_query_time(
     '''SELECT COUNT(*)
        FROM business
        WHERE trade_name LIKE 'Padaria%' ''',
-    "business.trade_name (before index)"
+    "business.trade_name"
 )
 
 measure_query_time(
@@ -61,16 +59,8 @@ measure_query_time(
     '''SELECT COUNT(*)
        FROM companies
        WHERE corporate_name LIKE 'Comercio%' ''',
-    "companies.corporate_name (before index)"
+    "companies.corporate_name"
 )
-
-# ===================
-# 💾 Optimize storage
-# ===================
-print()
-print("💾 Optimizing database storage...")
-
-conn.execute('VACUUM')
 
 # ==========
 # 🧹 Finish
