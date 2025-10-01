@@ -22,7 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles' ,
     'django.contrib.humanize'    ,
 
-    'companies',
+    'companies' ,
+    'summarizer',
 ]
 
 MIDDLEWARE = [

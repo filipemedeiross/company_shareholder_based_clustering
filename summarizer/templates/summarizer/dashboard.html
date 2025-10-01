@@ -1,0 +1,116 @@
+{% extends 'companies/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Estatísticas do Banco de Dados</h2>
+    
+    <div class="stats-section">
+        <h3>Empresas (Total: {{ stats.companies.total_companies|intcomma }})</h3>
+        
+        <div class="stats-card">
+            <h4>Estatísticas de Capital</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Capital Mínimo</td>
+                        <td>R$ {{ stats.companies.min_capital|floatformat:2|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td>Capital Máximo</td>
+                        <td>R$ {{ stats.companies.max_capital|floatformat:2|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td>Capital Médio</td>
+                        <td>R$ {{ stats.companies.avg_capital|floatformat:2|intcomma }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="stats-section">
+        <h3>Sócios (Total: {{ stats.partners.total_partners|intcomma }})</h3>
+        
+        <div class="stats-card">
+            <h4>Datas de Entrada</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sócio mais antigo</td>
+                        <td>{{ stats.partners.earliest_partner_date }}</td>
+                    </tr>
+                    <tr>
+                        <td>Sócio mais recente</td>
+                        <td>{{ stats.partners.latest_partner_date }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="stats-section">
+        <h3>Atividades Empresariais</h3>
+        
+        <div class="stats-card">
+            <h4>Estatísticas Gerais</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total de Atividades</td>
+                        <td>{{ stats.business.total_business|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td>Empresas Únicas</td>
+                        <td>{{ stats.business.unique_companies|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td>Empresas Fechadas</td>
+                        <td>{{ stats.business.closed_businesses|intcomma }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="stats-card">
+            <h4>Datas de Operação</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Abertura mais antiga</td>
+                        <td>{{ stats.business.earliest_opening }}</td>
+                    </tr>
+                    <tr>
+                        <td>Abertura mais recente</td>
+                        <td>{{ stats.business.latest_opening }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
