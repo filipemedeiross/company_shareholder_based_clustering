@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <title>Hermes</title>
+
+        <link rel="icon" href="{% static 'global/images/hermes_favicon.jpg' %}">
+        <link rel="stylesheet" href="{% static 'global/css/style.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" referrerpolicy="no-referrer" />
+    </head>
+
+    <body>
+        <header class="top-bar">
+            <h1 class="top-bar-title">
+                <a href="{% url 'companies:list' %}">
+                    <img src="{% static 'global/images/hermes_logo.png' %}" alt="Hermes Logo" class="logo"> Hermes
+                </a>
+            </h1>
+        </header>
+
+        <div class="container">
+            <div class="sidebar" id="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="{% url 'companies:list' %}"      ><i class="fas fa-building" ></i> <span class="menu-text">Companies </span></a></li>
+                        <li><a href="{% url 'summarizer:dashboard' %}"><i class="fas fa-chart-bar"></i> <span class="menu-text">Statistics</span></a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="sidebar-toggle" id="sidebar-toggle">
+                <i class="fas fa-chevron-left" id="toggle-icon"></i>
+            </div>
+            <div class="main-content" id="main-content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+        <script src="{% static 'global/js/scripts.js' %}"></script>
+    </body>
+
+</html>
