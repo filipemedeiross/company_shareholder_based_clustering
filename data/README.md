@@ -139,9 +139,7 @@ This suite randomly samples rows from SQLite and checks that they exist in DuckD
 
 #### ⚡ Performance comparison
 
-Run script `tests/test_performance.py` compares DuckDB against SQLite on common analytical queries.
-
-Example results (measured on the RFB datasets):
+Run script `tests/test_performance.py` compares DuckDB against SQLite on common analytical queries. Example results (measured on the RFB datasets):
 
 ```
 === Testing business statistics ===
