@@ -145,7 +145,7 @@ class ListCompaniesTests(FunctionalTestBase):
         self.assertAlmostEqual(
             table ['x'] + table['width'] / 2,
             window['width']              / 2,
-            delta=150                       ,
+            delta=20                        ,
             msg=f"Table is not approximately centered",
         )
 
