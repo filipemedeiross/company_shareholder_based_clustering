@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
         menuTexts.forEach(text => text.style.display = 'none');
 
         if (mainContent) {
-            mainContent.classList.add('expanded' );
+            mainContent.classList.add('expanded');
         }
     }
 
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebarToggle.classList.toggle('collapsed');
 
         if (mainContent) {
-            mainContent.classList.toggle('expanded' );
+            mainContent.classList.toggle('expanded');
         }
 
         if (sidebar.classList.contains('collapsed')) {
