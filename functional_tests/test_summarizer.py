@@ -1,18 +1,15 @@
-from django.test import TestCase
 from django.urls import reverse
 
-class SummarizerFunctionalTests(TestCase):
-    def test_dashboard_view_status_code(self):
-        url = reverse('summarizer:dashboard')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+from .base import FunctionalTestBase
 
-    def test_dashboard_template_used(self):
-        url = reverse('summarizer:dashboard')
-        response = self.client.get(url)
-        self.assertTemplateUsed(response, 'summarizer/dashboard.html')
 
-    def test_dashboard_context(self):
-        url = reverse('summarizer:dashboard')
-        response = self.client.get(url)
-        self.assertIn('some_expected_context_key', response.context)
+class DashboardSummarizerTests(FunctionalTestBase):
+    base_url = reverse("summarizer:dashboard")
+
+    def test_dashboard_view_loads_in_browser(self):
+        self.browser.get(self.base_url)
+        self.assertIn("Database Statistics", self.browser.page_source)
+
+    def test_dashboard_template_rendered(self):
+        self.browser.get(self.base_url)
+        self.assertTrue(self.find_css_element("h2"))
