@@ -28,6 +28,8 @@ data/
     sqlite/
         db.sqlite3
         rfb.sqlite3
+    duckdb/
+        rfb.duckdb
 ```
 
 ### 📥 DATA INGESTION
@@ -110,3 +112,50 @@ These indexes enable fast full-text searches using the `MATCH` operator, which s
 > ```bash
 > python manage.py test companies.tests.test_orm
 > ```
+
+### 🦆 DUCKDB DATABASE
+
+Run `scripts/4_load_duckdb.py` to create an **analytical columnar database** using [DuckDB](https://duckdb.org/). This step loads the same structured data from `rfb.sqlite3` directly into a columnar format optimized for analytics.
+
+- Tables created in DuckDB:
+  - `partners (cnpj, name_partner, start_date)`
+  - `companies(cnpj, corporate_name, capital)`
+  - `business (cnpj, cnpj_order, cnpj_dv, branch, trade_name, closing_date, opening_date, cep)`
+
+- The schema is **inferred automatically** from SQLite and the data is copied in bulk.
+- The resulting file `rfb.duckdb` is stored in `data/duckdb/`.
+
+> ✅ **Note**: DuckDB provides columnar storage and a vectorized execution engine, which makes it much faster for analytical queries (e.g., aggregations, DISTINCT counts, full scans) compared to row-based engines like SQLite.
+
+#### 🔍 Consistency validation
+
+The integrity of the DuckDB database can be validated using:
+
+```bash
+python -m unittest tests.test_duckdb
+```
+
+This suite randomly samples rows from SQLite and checks that they exist in DuckDB with identical values.
+
+#### ⚡ Performance comparison
+
+Run script `tests/test_performance.py` compares DuckDB against SQLite on common analytical queries.
+
+Example results (measured on the RFB datasets):
+
+=== Testing business statistics ===
+DuckDB - Execution time: 1.216094 seconds
+SQLite - Execution time: 152.077124 seconds
+DuckDB is 125.05x faster than SQLite for business statistics
+
+=== Testing companies statistics ===
+DuckDB - Execution time: 0.639055 seconds
+SQLite - Execution time: 29.802724 seconds
+DuckDB is 46.64x faster than SQLite for companies statistics
+
+=== Testing partners statistics ===
+DuckDB - Execution time: 2.512250 seconds
+SQLite - Execution time: 415.713736 seconds
+DuckDB is 165.47x faster than SQLite for partners statistics
+
+> These results highlight how DuckDB’s columnar storage and query engine drastically reduce query times, making it highly suitable for analytics at scale.
