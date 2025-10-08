@@ -5,9 +5,6 @@ import sqlite3
 from .constants import SQLITE_PATH
 
 
-ENV_VAR = "NEO4J_PASSWORD"
-
-
 def get_secret_from_env(var_name):
     value = os.environ.get(var_name)
 
@@ -16,30 +13,32 @@ def get_secret_from_env(var_name):
 
     return value
 
-def import_partners(tx, cnpj, partner_name, start_date):
+def import_partners(tx, batch):
     query = """
-        MERGE (c:Company {cnpj: $cnpj})
+        UNWIND $batch AS row
 
-        MERGE (p:Partner {name: $partner_name})
+        MERGE (c:Company {cnpj: row[0]})
+        ON CREATE SET c.corporate_name = row[2]
+        ON MATCH  SET c.corporate_name = coalesce(c.corporate_name, row[2])
 
-        MERGE (p)-[r:PARTNER_OF]->(c)
-        ON CREATE SET r.start_date = $start_date
-        ON MATCH SET  r.start_date = coalesce(r.start_date, $start_date)
+        MERGE (p:Partner {name: row[1]})
+        MERGE (p)-[:PARTNER_OF]->(c)
     """
 
-    tx.run(
-        query,
-        cnpj=cnpj,
-        partner_name=partner_name,
-        start_date=start_date
-    )
+    tx.run(query, batch=batch)
+
+def fetch_in_chunks(cursor, chunk_size=10_000):
+    while rows := cursor.fetchmany(chunk_size):
+        yield rows
 
 
-# ==============================
-# 1. Connection to Neo4j Desktop
-# ==============================
-NEO4J_URI      = "neo4j://127.0.0.1:7687"
-NEO4J_USER     = "neo4j"
+# ===========================
+# Connection to Neo4j Desktop
+# ===========================
+ENV_VAR = "NEO4J_PASSWORD"
+
+NEO4J_URI  = "neo4j://127.0.0.1:7687"
+NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = get_secret_from_env(ENV_VAR)
 
 driver = neo4j.GraphDatabase.driver(
@@ -47,31 +46,42 @@ driver = neo4j.GraphDatabase.driver(
     auth=(NEO4J_USER, NEO4J_PASSWORD)
 )
 
-# =============================
-# 2. Connection to local SQLite
-# =============================
+with driver.session() as session:
+    session.run("CREATE CONSTRAINT company_cnpj IF NOT EXISTS FOR (c:Company) REQUIRE c.cnpj IS UNIQUE")
+    session.run("CREATE CONSTRAINT partner_name IF NOT EXISTS FOR (p:Partner) REQUIRE p.name IS UNIQUE")
+
+# ==========================
+# Connection to local SQLite
+# ==========================
 conn   = sqlite3.connect(SQLITE_PATH)
 cursor = conn.cursor()
 
-# =========================================
-# 3. Read from SQLite and insert into Neo4j
-# =========================================
 cursor.execute("""
-    SELECT partners.cnpj, partners.name_partner, partners.start_date
-    FROM partners
+    SELECT 
+        p.cnpj,
+        p.name_partner,
+        c.corporate_name
+    FROM partners AS p
+    JOIN companies AS c USING (cnpj)
 """)
 
-rows = cursor.fetchall()
-print(f"🔄 Inserting {len(rows)} relationships into Neo4j...")
+# =====================
+# Insert data in chunks
+# =====================
+total_inserted = 0
 
 with driver.session() as session:
-    for cnpj, partner_name, start_date in rows:
-        session.execute_write(import_partners, cnpj, partner_name, start_date)
+    for chunk in fetch_in_chunks(cursor):
+        session.execute_write(import_partners, chunk)
+
+        total_inserted += len(chunk)
+        if total_inserted % 500_000 == 0:
+            print(f"✅ Inserted {total_inserted} relationships so far...")
 
 print("✅ Graph created with Partner nodes, Company nodes, and PARTNER_OF relationships.")
 
-# ====================
-# 4. Close connections
-# ====================
+# =================
+# Close connections
+# =================
 conn  .close()
 driver.close()
