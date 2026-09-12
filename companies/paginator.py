@@ -48,9 +48,9 @@ class CursorPaginator:
                 next_cursor = getattr(items[-1], self.ordering) if has_more else None
 
         return CursorPage(
-            obj_list    = items            ,
-            has_next    = bool(next_cursor),
-            has_previous= bool(prev_cursor),
-            next_cursor = next_cursor      ,
-            prev_cursor = prev_cursor      ,
+            obj_list    =items            ,
+            has_next    =bool(next_cursor),
+            has_previous=bool(prev_cursor),
+            next_cursor =next_cursor      ,
+            prev_cursor =prev_cursor      ,
         )
