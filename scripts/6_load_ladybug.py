@@ -7,6 +7,7 @@ from contextlib import ExitStack, closing
 from tempfile   import TemporaryDirectory
 
 import ladybug         as lb
+import pyarrow         as pa
 import pyarrow.parquet as pq
 
 from .constants import DUCKDB_PATH, LADYBUG_PATH
@@ -73,6 +74,46 @@ def export_tables(source, directory, memory_limit, threads):
     return exports
 
 
+def import_table(conn, table, path, count, batch_size):
+    """Bound each COPY transaction and flush it before loading the next batch."""
+    batch_path   = path.parent / 'import_batch.parquet'
+    escaped_path = batch_path.as_posix().replace("'", "\\'")
+
+    loaded = 0
+
+    with pq.ParquetFile(path) as parquet:
+        for batch in parquet.iter_batches(
+            batch_size =batch_size,
+            use_threads=False     ,
+        ):
+            pq.write_table(pa.Table.from_batches([batch]), batch_path)
+
+            try:
+                conn.execute(
+                    f"COPY {table} FROM '{escaped_path}' (IGNORE_ERRORS=false)"
+                ).close()
+
+                conn.execute('CHECKPOINT').close()
+            except RuntimeError as exc:
+                if 'buffer pool is full' not in str(exc).lower():
+                    raise
+
+                raise RuntimeError(
+                    f'Ladybug ran out of buffer memory loading {table} after '
+                    f'{loaded:,} checkpointed records '
+                    f'(batch size: {batch_size:,}). '
+                    'Rerun with a smaller --batch-size or, if RAM is available, '
+                    'a larger --buffer-pool-mb. --memory-limit only controls DuckDB.'
+                ) from exc
+
+            loaded += batch.num_rows
+
+            print(f'  {table}: {loaded:,}/{count:,} records saved.', flush=True)
+
+    if loaded != count:
+        raise RuntimeError(f'{table}: expected {count:,} records, read {loaded:,}.')
+
+
 def load_graph(
     source=DUCKDB_PATH ,
     target=LADYBUG_PATH,
@@ -80,6 +121,7 @@ def load_graph(
     memory_limit    ='1GB'  ,
     buffer_pool_size=1024**3,
     threads         =4      ,
+    batch_size      =100_000,
 ):
     """Publish a complete graph; leave the source and existing targets intact."""
     source = Path(source).resolve()
@@ -90,8 +132,8 @@ def load_graph(
     if target.exists():
         raise FileExistsError(f'Ladybug database already exists: {target}')
 
-    if threads < 1 or buffer_pool_size < 1:
-        raise ValueError('Threads and buffer_pool_size must be positive.')
+    if threads < 1 or buffer_pool_size < 1 or batch_size < 1:
+        raise ValueError('Threads, buffer_pool_size and batch_size must be positive.')
 
     target.parent.mkdir(parents=True, exist_ok=True)
 
@@ -144,11 +186,7 @@ def load_graph(
                 for table, (path, count) in exports.items():
                     print(f'Loading {table}: {count:,} records...', flush=True)
 
-                    escaped_path = path.as_posix().replace("'", "\\'")
-
-                    conn.execute(
-                        f"COPY {table} FROM '{escaped_path}' (IGNORE_ERRORS=false)"
-                    ).close()
+                    import_table(conn, table, path, count, batch_size)
 
                 conn.execute('CHECKPOINT').close()
 
@@ -168,12 +206,13 @@ def load_graph(
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('--source'        , type=Path, default=DUCKDB_PATH , help='Source DuckDB database (opened read-only).'           )
-    parser.add_argument('--output'        , type=Path, default=LADYBUG_PATH, help='New Ladybug database path; must not already exist.'   )
-    parser.add_argument('--memory-limit'  ,            default='1GB'       , help='DuckDB memory limit; larger operations spill to disk.')
-    parser.add_argument('--buffer-pool-mb', type=int , default=1024        , help='Ladybug buffer pool size in MiB.'                     )
-    parser.add_argument('--threads'       , type=int , default=4                                                                         )
-    parser.add_argument('--dll-directory' , type=Path,                       help='Windows directory containing Ladybug runtime DLLs.'   )
+    parser.add_argument('--source'        , type=Path, default=DUCKDB_PATH , help='Source DuckDB database (opened read-only).'                      )
+    parser.add_argument('--output'        , type=Path, default=LADYBUG_PATH, help='New Ladybug database path; must not already exist.'              )
+    parser.add_argument('--memory-limit'  ,            default='1GB'       , help='DuckDB memory limit; larger operations spill to disk.'           )
+    parser.add_argument('--buffer-pool-mb', type=int , default=1024        , help='Ladybug buffer pool size in MiB.'                                )
+    parser.add_argument('--threads'       , type=int , default=4                                                                                    )
+    parser.add_argument('--batch-size'    , type=int , default=100_000     , help='Maximum records per Ladybug COPY, checkpointed after each batch.')
+    parser.add_argument('--dll-directory' , type=Path,                       help='Windows directory containing Ladybug runtime DLLs.'              )
 
     args = parser.parse_args()
 
@@ -192,6 +231,7 @@ def main():
             memory_limit    =args.memory_limit            ,
             buffer_pool_size=args.buffer_pool_mb * 1024**2,
             threads         =args.threads                 ,
+            batch_size      =args.batch_size              ,
         )
 
 

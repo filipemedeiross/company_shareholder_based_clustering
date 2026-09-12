@@ -30,6 +30,8 @@ data/
         rfb.sqlite3
     duckdb/
         rfb.duckdb
+    ladybug/
+        rfb.lbug
 ```
 
 ### 📥 DATA INGESTION
@@ -159,3 +161,19 @@ DuckDB is 165.47x faster than SQLite for partners statistics
 ```
 
 > These results highlight how DuckDB’s columnar storage and query engine drastically reduce query times, making it highly suitable for analytics at scale.
+
+### 🐞 LADYBUG GRAPH DATABASE
+
+Run the following command from the repository root to create the embedded graph at `data/ladybug/rfb.lbug` from `data/duckdb/rfb.duckdb`:
+
+```bash
+python -m scripts.6_load_ladybug
+```
+
+It opens DuckDB read-only and imports only two node tables and their bipartite relationships:
+
+- `Company(cnpj, corporate_name, capital)`, keyed by the basic CNPJ as text.
+- `Partner(name_partner)`, keyed by the exact partner.
+- `(Partner)-[:PARTNER_OF {start_date}]->(Company)`, with one relationship per company/partner pair. Repeated pairs retain the earliest non-null entry date.
+
+Companies without partners are retained and the `business` table is not imported.
