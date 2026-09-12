@@ -1,4 +1,5 @@
 import numpy as np
+
 from scipy.sparse import csr_matrix
 
 
@@ -14,7 +15,7 @@ def similarity(L, dist):
 def hc_steps(idx, C, l):
     v, Cv = idx, C[idx]
 
-    min_u = None
+    min_u    = None
     min_dist = l
 
     steps = []
@@ -51,10 +52,10 @@ def list2matrix(adjlist, n, l):
 def normalize(L):
     argsort = np.argsort(L[:, :2].flatten())
 
-    ind = np.arange(len(argsort))
-    ind = np.array(sorted(ind, key=lambda i: argsort[i]))
+    ind = np.arange(len   (argsort))
+    ind = np.array (sorted(ind, key=lambda i: argsort[i]))
 
-    L_ = L.copy()
+    L_        = L  .copy   ()
     L_[:, :2] = ind.reshape(L[:, :2].shape)
 
     return L_

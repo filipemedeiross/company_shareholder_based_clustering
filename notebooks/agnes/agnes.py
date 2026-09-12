@@ -1,8 +1,9 @@
 import numpy as np
+
 from .cluster import Cluster
-from .tools   import distance,   \
-                     hc_steps,   \
-                     similarity, \
+from .tools   import distance   , \
+                     hc_steps   , \
+                     similarity , \
                      list2matrix
 
 
@@ -10,8 +11,10 @@ def agnes(idx, adjlist, n, l, thresh=1):
     adjmatrix = list2matrix(adjlist, n, l)
 
     L = []
-    C = {v : Cluster(v, [v], adj)
-         for v, adj in enumerate(adjmatrix)}
+    C = {
+        v : Cluster(v, [v], adj)
+        for v, adj in enumerate(adjmatrix)
+    }
 
     m = idx
     v =   n
@@ -30,8 +33,8 @@ def agnes(idx, adjlist, n, l, thresh=1):
             if thresh > similarity(l, d):
                 return np.array(L, dtype='float64')
 
-            C[v] = C_v = Cluster(v,                     \
-                                 C_k.v + C_m.v,         \
+            C[v] = C_v = Cluster(v                    , \
+                                 C_k.v + C_m.v        , \
                                  C_k.l.multiply(C_m.l))
 
             L.append([C_k.id, C_m.id, d, len(C_v.v)])

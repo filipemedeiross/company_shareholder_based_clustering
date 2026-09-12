@@ -12,6 +12,7 @@ class FindUnion:
     def __getitem__(self, u):
         while u != self.v[u]:
             self.v[u] = self.v[self.v[u]]
+
             u = self.v[u]
 
         return u
@@ -30,6 +31,7 @@ class DisjointSet:
     def __getitem__(self, u):
         while u != self.v[u]:
             self.v[u] = self.v[self.v[u]]
+
             u = self.v[u]
 
         return u

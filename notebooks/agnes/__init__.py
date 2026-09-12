@@ -1,3 +1,3 @@
-from .agnes  import agnes
-from .cluster import DisjointSet
+from .agnes      import agnes
 from .dendrogram import dendrogram
+from .cluster    import DisjointSet
