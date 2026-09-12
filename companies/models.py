@@ -3,14 +3,16 @@ from django.urls import reverse
 
 
 class Companies(models.Model):
-    rowid          = models.IntegerField()
-    cnpj           = models.TextField(primary_key=True)
-    corporate_name = models.TextField(blank=True, null=True)
+    rowid = models.IntegerField()
+
+    cnpj           = models.TextField   (primary_key=True)
+    corporate_name = models.TextField   (blank=True, null=True)
     capital        = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed  = False
         db_table = 'companies'
+
         verbose_name        = 'Company'
         verbose_name_plural = 'Companies'
 
@@ -24,14 +26,16 @@ class Companies(models.Model):
 
 
 class Partners(models.Model):
-    rowid        = models.IntegerField(primary_key=True)
+    rowid = models.IntegerField(primary_key=True)
+
     cnpj         = models.ForeignKey(Companies, models.DO_NOTHING, db_column='cnpj')
-    name_partner = models.TextField(blank=True, null=True)
-    start_date   = models.DateField(blank=True, null=True)
+    name_partner = models.TextField (blank=True, null=True)
+    start_date   = models.DateField (blank=True, null=True)
 
     class Meta:
         managed  = False
         db_table = 'partners'
+
         verbose_name        = 'Partner'
         verbose_name_plural = 'Partners'
 
@@ -42,22 +46,32 @@ class Partners(models.Model):
 
 
 class Business(models.Model):
-    rowid        = models.IntegerField(primary_key=True)
+    rowid = models.IntegerField(primary_key=True)
+
     cnpj         = models.ForeignKey('Companies', models.DO_NOTHING, db_column='cnpj')
     cnpj_order   = models.TextField()
     cnpj_dv      = models.TextField()
+
     branch       = models.BooleanField(blank=True, null=True)
-    trade_name   = models.TextField(blank=True, null=True)
-    closing_date = models.DateField(blank=True, null=True)
-    opening_date = models.DateField(blank=True, null=True)
-    cep          = models.TextField(blank=True, null=True)
+    trade_name   = models.TextField   (blank=True, null=True)
+    closing_date = models.DateField   (blank=True, null=True)
+    opening_date = models.DateField   (blank=True, null=True)
+    cep          = models.TextField   (blank=True, null=True)
 
     class Meta:
         managed  = False
         db_table = 'business'
-        unique_together = (('cnpj', 'cnpj_order', 'cnpj_dv'),)
+
         verbose_name        = 'Business'
         verbose_name_plural = 'Businesses'
+
+        unique_together = (
+            (
+                'cnpj'      ,
+                'cnpj_order',
+                'cnpj_dv'   ,
+            ),
+        )
 
     def __str__(self):
         return f"{self.cnpj}.{self.cnpj_order}-{self.cnpj_dv}"
@@ -67,11 +81,12 @@ class Business(models.Model):
 
 class PartnersFts(models.Model):
     rowid        = models.IntegerField(primary_key=True)
-    name_partner = models.TextField(blank=True, null=True)
+    name_partner = models.TextField   (blank=True, null=True)
 
     class Meta:
         managed  = False
         db_table = 'partners_fts'
+
         verbose_name        = 'Partners FTS'
         verbose_name_plural = 'Partners FTSs'
 
@@ -83,11 +98,12 @@ class PartnersFts(models.Model):
 
 class CompaniesFts(models.Model):
     rowid          = models.IntegerField(primary_key=True)
-    corporate_name = models.TextField(blank=True, null=True)
+    corporate_name = models.TextField   (blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'companies_fts'
+
         verbose_name        = 'Companies FTS'
         verbose_name_plural = 'Companies FTSs'
 
@@ -96,11 +112,12 @@ class CompaniesFts(models.Model):
 
 class BusinessFts(models.Model):
     rowid      = models.IntegerField(primary_key=True)
-    trade_name = models.TextField(blank=True, null=True)
+    trade_name = models.TextField   (blank=True, null=True)
 
     class Meta:
         managed  = False
         db_table = 'business_fts'
+
         verbose_name        = 'Businesses FTS'
         verbose_name_plural = 'Businesses FTSs'
 
