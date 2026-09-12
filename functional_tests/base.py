@@ -4,6 +4,7 @@ import unittest
 import subprocess
 
 from selenium import webdriver
+
 from selenium.webdriver.common.by  import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support    import expected_conditions as EC
@@ -60,7 +61,7 @@ class FunctionalTestBase(unittest.TestCase):
 
     @staticmethod
     def get_python():
-        if (hasattr(sys, "real_prefix")) or \
+        if (hasattr(sys, "real_prefix")                                  ) or \
            (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix):
             return sys.executable
 

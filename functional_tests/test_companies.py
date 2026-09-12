@@ -1,12 +1,12 @@
 from .base import FunctionalTestBase
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support   import expected_conditions as EC
 
 
 class ListCompaniesTests(FunctionalTestBase):
     def test_home_companies_paginated_by_20(self):
-        self.open_home()
+        self.open_home            ()
         self.wait_for_company_list()
 
         rows      = self.find_css_elements("#company-list .company-row")
@@ -16,11 +16,12 @@ class ListCompaniesTests(FunctionalTestBase):
         self.assertTrue (paginator,     "No pagination element found"      )
 
     def test_company_row_click_navigates_to_detail_page(self):
-        self.open_home()
+        self.open_home            ()
         self.wait_for_company_list()
 
         company_link = self.find_css_element("#company-list .company-row td a")
         company_cnpj = company_link.text
+
         company_link.click()
 
         self.wait.until(
@@ -32,23 +33,25 @@ class ListCompaniesTests(FunctionalTestBase):
         self.assertIn(f"/detail/{company_cnpj}/", self.browser.current_url)
 
     def test_pagination_next_click_redirects_with_after(self):
-        self.open_home()
+        self.open_home            ()
         self.wait_for_company_list()
 
         next_link = self.browser.find_element (By.LINK_TEXT, "Next")
-        next_href = next_link   .get_attribute("href")
+        next_href = next_link   .get_attribute("href"              )
+
         next_link.click()
 
         self.wait_for_company_list()
 
-        self.assertIn("after=", next_href)
+        self.assertIn("after=", next_href               )
         self.assertIn("after=", self.browser.current_url)
 
     def test_header_companies_click_returns_to_first_page(self):
-        self.open_home()
+        self.open_home            ()
         self.wait_for_company_list()
 
         next_link = self.browser.find_element(By.LINK_TEXT, "Next")
+
         next_link.click()
 
         self.wait_for_company_list()
@@ -60,6 +63,7 @@ class ListCompaniesTests(FunctionalTestBase):
         self.wait_for_company_list()
 
         current_url = self.browser.current_url
+
         self.assertTrue(
             current_url.endswith("127.0.0.1:8000/")                ,
             f"Expected to be back on first page: got {current_url}",
@@ -71,27 +75,27 @@ class ListCompaniesTests(FunctionalTestBase):
         )
 
     def test_layout_and_styling_table_centered(self):
-        self.open_home()
+        self.open_home            ()
         self.wait_for_company_list()
 
-        window = self.browser.get_window_size()
-        table  = self.find_css_element(
+        window = self.browser.get_window_size ()
+        table  = self        .find_css_element(
             "#company-list .company-table"
         ).rect
 
         self.assertAlmostEqual(
             table ['x'] + table['width'] / 2,
             window['width']              / 2,
-            delta=20                        ,
-            msg=f"Table is not approximately centered",
+            delta=20                                    ,
+            msg  =f"Table is not approximately centered",
         )
 
     def test_search_form_placeholder_and_accessibility(self):
         self.open_home()
 
-        search_input = self.find_css_element ("input[name='q']")
-        placeholder  = search_input.get_attribute("placeholder")
-        aria_label   = search_input.get_attribute("aria-label" )
+        search_input = self        .find_css_element("input[name='q']")
+        placeholder  = search_input.get_attribute   ("placeholder")
+        aria_label   = search_input.get_attribute   ("aria-label" )
 
         self.assertIsNotNone(placeholder, "Search input should have a placeholder")
         self.assertIsNotNone(aria_label , "Search input should have aria-label"   )
@@ -99,19 +103,19 @@ class ListCompaniesTests(FunctionalTestBase):
 
 class SearchCompaniesTests(FunctionalTestBase):
     def test_search_page_loads_with_search_form(self):
-        self.open_home("/search/?q=00000000")
+        self.open_home            ("/search/?q=00000000")
         self.wait_for_company_list()
 
-        search_form   = self.find_css_element(".search-form"   )
-        search_input  = self.find_css_element("input[name='q']")
+        search_form   = self.find_css_element(".search-form"       )
+        search_input  = self.find_css_element("input[name='q']"    )
         search_button = self.find_css_element(".search-form button")
 
-        self.assertTrue(search_form.is_displayed  ())
-        self.assertTrue(search_input.is_displayed ())
+        self.assertTrue(search_form  .is_displayed())
+        self.assertTrue(search_input .is_displayed())
         self.assertTrue(search_button.is_displayed())
 
     def test_empty_search_shows_error_message_and_no_results(self):
-        self.open_home("/search/?q=")
+        self.open_home            ("/search/?q=")
         self.wait_for_company_list()
 
         self.assertIn("Please fill in the search field.", self.browser.page_source)
@@ -131,22 +135,25 @@ class SearchCompaniesTests(FunctionalTestBase):
 
         self.assertFalse(
             search_input.get_property("validity")["valid"],
-            "Expected input to be invalid when empty"
+            "Expected input to be invalid when empty"     ,
         )
+
         self.assertTrue(
-            current_url.endswith("/"),
-            f"Expected to remain on home page, but got redirected to {current_url}"
+            current_url.endswith("/")                                              ,
+            f"Expected to remain on home page, but got redirected to {current_url}",
         )
 
     def test_search_results_are_filtered(self):
-        self.open_home()
+        self.open_home            ()
         self.wait_for_company_list()
 
         first_cnpj = self.find_css_element(
             "#company-list .company-row td:first-child"
         ).text
 
-        search_input = self.find_css_element("input[name='q']")
+        search_input = self.find_css_element(
+            "input[name='q']"
+        )
         search_input.send_keys(first_cnpj)
 
         self.find_css_element(
@@ -167,13 +174,13 @@ class SearchCompaniesTests(FunctionalTestBase):
                 found_match = True
                 break
 
-        self.assertGreater(len(rows), 0, "No search results found")
+        self.assertGreater(len(rows), 0, "No search results found"               )
         self.assertTrue   (found_match , f"CNPJ does not start with {first_cnpj}")
 
     def test_search_by_corporate_name(self):
         search_term = 'manutencao'
 
-        self.open_home(f"/search/?q={search_term}")
+        self.open_home            (f"/search/?q={search_term}")
         self.wait_for_company_list()
 
         rows = self.find_css_elements("#company-list .company-row")
@@ -188,7 +195,7 @@ class SearchCompaniesTests(FunctionalTestBase):
                 found_match = True
                 break
 
-        self.assertGreater(len(rows), 0, "No search results found")
+        self.assertGreater(len(rows), 0, "No search results found"                  )
         self.assertTrue   (found_match , f"No company name contains '{search_term}'")
 
 
@@ -196,7 +203,7 @@ class CompanyDetailTests(FunctionalTestBase):
     cnpj = "68772011"
 
     def test_detail_page_shows_company_information(self):
-        self.open_home(f"/detail/{self.cnpj}/")
+        self.open_home (f"/detail/{self.cnpj}/")
         self.wait.until(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, ".company-detail")
@@ -206,13 +213,13 @@ class CompanyDetailTests(FunctionalTestBase):
         company_info = self.find_css_element(".company-info")
 
         self.assertIsNotNone(company_info)
-        self.assertIn(
-            self.cnpj,
-            company_info.text
+        self.assertIn       (
+            self.cnpj        ,
+            company_info.text,
         )
 
     def test_detail_page_shows_business_information(self):
-        self.open_home(f"/detail/{self.cnpj}/")
+        self.open_home (f"/detail/{self.cnpj}/")
         self.wait.until(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, ".company-detail")
@@ -220,21 +227,21 @@ class CompanyDetailTests(FunctionalTestBase):
         )
 
         business_section = self.browser.find_element(
-            By.XPATH,
-            "//div[contains(@class, 'section')][.//h3[normalize-space(text())='Businesses']]"
+            By.XPATH                                                                         ,
+            "//div[contains(@class, 'section')][.//h3[normalize-space(text())='Businesses']]",
         )
         business_rows    = business_section.find_elements(
-            By.CSS_SELECTOR,
-            ".company-table tbody tr"
+            By.CSS_SELECTOR          ,
+            ".company-table tbody tr",
         )
 
         if business_rows:
-            self.assertGreater(len(business_rows), 0)
+            self.assertGreater(len(business_rows)  , 0)
         else:
-            self.assertIn("No business found.", business_section.text)
+            self.assertIn     ("No business found.", business_section.text)
 
     def test_detail_page_shows_partners_information(self):
-        self.open_home(f"/detail/{self.cnpj}/")
+        self.open_home (f"/detail/{self.cnpj}/")
         self.wait.until(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, ".company-detail")
@@ -242,15 +249,15 @@ class CompanyDetailTests(FunctionalTestBase):
         )
 
         partner_section = self.browser.find_element(
-            By.XPATH,
-            "//div[contains(@class, 'section')][.//h3[normalize-space(text())='Partners']]"
+            By.XPATH                                                                       ,
+            "//div[contains(@class, 'section')][.//h3[normalize-space(text())='Partners']]",
         )
         partner_rows = partner_section.find_elements(
-            By.CSS_SELECTOR,
-            ".company-table tbody tr"
+            By.CSS_SELECTOR          ,
+            ".company-table tbody tr",
         )
 
         if partner_rows:
-            self.assertGreater(len(partner_rows), 0)
+            self.assertGreater(len(partner_rows)  , 0)
         else:
-            self.assertIn("No partner found.", partner_section.text)
+            self.assertIn     ("No partner found.", partner_section.text)
