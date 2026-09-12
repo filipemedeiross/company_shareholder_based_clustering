@@ -1,9 +1,8 @@
 import time
 import unittest
 
-from django.db         import connections  , \
-                              DatabaseError
 from django.test.utils import CaptureQueriesContext
+from django.db         import connections, DatabaseError
 
 from companies.models import Companies   , \
                              Partners    , \
@@ -15,7 +14,8 @@ from companies.models import Companies   , \
 
 class ORMPerformanceTests(unittest.TestCase):
     def _run_and_inspect(
-        self    ,
+        self,
+
         queryset,
         limit=3 ,
     ):
@@ -25,8 +25,9 @@ class ORMPerformanceTests(unittest.TestCase):
             elapsed_s = time.perf_counter() - start
 
         nrows = len(results)
-        limit = limit            \
-                if limit < nrows \
+
+        limit = limit              \
+                if   limit < nrows \
                 else nrows
 
         print()
@@ -45,29 +46,35 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: Companies.objects.filter(cnpj="00000000")
         )
+
         self.assertTrue(results)
 
 
     def test_get_company_by_corporate_name(self):
         results = self._run_and_inspect(
-            lambda: Companies.objects.filter(corporate_name="BANCO DO BRASIL SA")
+            lambda: Companies.objects.filter(
+                corporate_name="BANCO DO BRASIL SA"
+            )
         )
+
         self.assertTrue(results)
 
 
     def test_get_partners_by_cnpj(self):
         results = self._run_and_inspect(
-            lambda: Partners.objects.filter(cnpj="33500091")
+            lambda: Partners.objects.filter     (cnpj="33500091"          )
                                     .values_list("name_partner", flat=True)
         )
+
         self.assertTrue(results)
 
 
     def test_get_cnpjs_by_name_partner(self):
         results = self._run_and_inspect(
-            lambda: Partners.objects.filter(name_partner="ERY FISCHER")
-                                    .values_list("cnpj", flat=True)
+            lambda: Partners.objects.filter     (name_partner="ERY FISCHER")
+                                    .values_list("cnpj", flat=True         )
         )
+
         self.assertTrue(results)
 
 
@@ -75,17 +82,19 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: Business.objects.filter(cnpj="00000000")
         )
+
         self.assertTrue(results)
 
 
     def test_get_business_by_cnpj_combination(self):
         results = self._run_and_inspect(
             lambda: Business.objects.filter(
-                cnpj="00000000"  ,
-                cnpj_order="0034",
-                cnpj_dv="50"     ,
+                cnpj      ="00000000",
+                cnpj_order="0034"    ,
+                cnpj_dv   ="50"      ,
             )
         )
+
         self.assertTrue(results)
 
 
@@ -93,6 +102,7 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: Business.objects.filter(trade_name="PADARIAS MINI")
         )
+
         self.assertTrue(results)
 
 
@@ -100,9 +110,10 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: PartnersFts.objects.extra(
                 where =["name_partner MATCH %s"],
-                params=["CARLA*"]               ,
+                params=["CARLA*"               ],
             )
         )
+
         self.assertTrue(results)
 
 
@@ -110,9 +121,10 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: PartnersFts.objects.extra(
                 where =["name_partner MATCH %s"],
-                params=["ERY FISCHER"]          ,
+                params=["ERY FISCHER"          ],
             )
         )
+
         self.assertTrue(results)
 
 
@@ -120,9 +132,10 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: CompaniesFts.objects.extra(
                 where =["corporate_name MATCH %s"],
-                params=["CARLA*"],
+                params=["CARLA*"                 ],
             )
         )
+
         self.assertTrue(results)
 
 
@@ -130,9 +143,10 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: CompaniesFts.objects.extra(
                 where =["corporate_name MATCH %s"],
-                params=["CARLA GARCIA"],
+                params=["CARLA GARCIA"           ],
             )
         )
+
         self.assertTrue(results)
 
 
@@ -140,9 +154,10 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: BusinessFts.objects.extra(
                 where =["trade_name MATCH %s"],
-                params=["Padaria*"]           ,
+                params=["Padaria*"           ],
             )
         )
+
         self.assertTrue(results)
 
 
@@ -150,9 +165,10 @@ class ORMPerformanceTests(unittest.TestCase):
         results = self._run_and_inspect(
             lambda: BusinessFts.objects.extra(
                 where =["trade_name MATCH %s"],
-                params=["PADARIAS MINI"]      ,
+                params=["PADARIAS MINI"      ],
             )
         )
+
         self.assertTrue(results)
 
 
@@ -165,9 +181,9 @@ class ORMPerformanceTests(unittest.TestCase):
 
     def test_prevent_insert_on_rfb(self):
         company = Companies(
-            cnpj="99999999"      ,
-            corporate_name="TEST",
-            capital=1000         ,
+            cnpj          ="99999999",
+            corporate_name="TEST"    ,
+            capital       =1000      ,
         )
 
         with self.assertRaises(DatabaseError):
@@ -176,6 +192,7 @@ class ORMPerformanceTests(unittest.TestCase):
 
     def test_prevent_update_on_rfb(self):
         obj = Companies.objects.using("rfb").first()
+
         obj.corporate_name = "ALTER"
 
         with self.assertRaises(DatabaseError):
