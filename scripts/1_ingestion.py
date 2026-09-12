@@ -1,13 +1,13 @@
 import shutil
-from multiprocessing import Process,      \
-                            JoinableQueue
 
-from .io import downloader_worker, \
-                extractor_worker , \
-                ensure_dirs
+from multiprocessing import Process, JoinableQueue
+
 from .constants import BASE_URL, \
                        TMP_DIR , \
                        DICT_DIR
+from .io        import downloader_worker, \
+                       extractor_worker , \
+                       ensure_dirs
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     downloaders = [
         Process(
             target=downloader_worker,
-            args=(
+            args  =(
                 BASE_URL  ,
                 file_type ,
                 10        ,
@@ -33,16 +33,18 @@ def main():
 
     for downloader in downloaders:
         downloader.start()
+
     extractor.start()
 
     for downloader in downloaders:
         downloader.join()
 
-    task_queue.put(None)
+    task_queue.put (None)
     task_queue.join()
     extractor .join()
 
     print("Removing temporary files...")
+
     shutil.rmtree(TMP_DIR)
 
 
