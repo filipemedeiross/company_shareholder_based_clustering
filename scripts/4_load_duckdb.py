@@ -1,9 +1,9 @@
 import duckdb
 
-from .load import measure_query_time
 from .constants import DUCKDB_PATH, \
                        DUCKDB_DIR , \
                        SQLITE_PATH
+from .load      import measure_query_time
 
 
 DUCKDB_DIR.mkdir(parents=True, exist_ok=True)
@@ -68,5 +68,5 @@ measure_query_time(
 conn.close()
 
 print()
-print(f"✅ DuckDB database successfully created at: {DUCKDB_PATH}")
-print("✅ Data stored in columnar format optimized for analytics.")
+print(f"✅ DuckDB database successfully created at: {DUCKDB_PATH}" )
+print( "✅ Data stored in columnar format optimized for analytics.")
