@@ -3,13 +3,12 @@ import random
 import sqlite3
 import unittest
 
-import pandas as pd
-import pyarrow.parquet as pq
-import pyarrow.compute as pc
+import pandas            as pd
+import pyarrow.parquet   as pq
+import pyarrow.compute   as pc
 import matplotlib.pyplot as plt
 
-from fastparquet import ParquetFile
-
+from fastparquet       import ParquetFile
 from scripts.constants import ROOT_DIR         , \
                               SQLITE_PATH      , \
                               PARQUET_PARTNERS , \
@@ -19,8 +18,8 @@ from scripts.constants import ROOT_DIR         , \
 
 class TestSQLiteBase(unittest.TestCase):
     def setUp(self):
-        self.conn   = sqlite3.connect(SQLITE_PATH)
-        self.cursor = self.conn.cursor()
+        self.conn   = sqlite3  .connect(SQLITE_PATH)
+        self.cursor = self.conn.cursor ()
 
     def tearDown(self):
         self.conn.close()
@@ -30,7 +29,12 @@ class TestSQLiteBase(unittest.TestCase):
 
         with open(filename, mode='rb') as f:
             pf   = ParquetFile(f)
-            idxs = sorted(random.sample(range(pf.count()), n))
+
+            idxs = sorted(
+                random.sample(
+                    range(pf.count()), n
+                )
+            )
 
             current_row = 0
             for rg in pf.iter_row_groups():
@@ -39,7 +43,7 @@ class TestSQLiteBase(unittest.TestCase):
                 local_indices = [
                     i - current_row
                     for i in idxs
-                    if current_row <= i < current_row + num_rows
+                    if  current_row <= i < current_row + num_rows
                 ]
 
                 if local_indices:
@@ -52,20 +56,21 @@ class TestSQLiteBase(unittest.TestCase):
         return pd.concat(samples, ignore_index=True)
 
     def get_sample_trade_name(self, filename, n=3):
-        table = pq.read_table(filename, columns=['trade_name'])
-        table = table.filter(pc.field('trade_name').is_valid())
+        table = pq.read_table(filename, columns=['trade_name'] )
+        table = table.filter (pc.field('trade_name').is_valid())
 
         return table.to_pandas().sample(n)
 
     def get_sample_corporate_name(self, filename, n=3):
-        table = pq.read_table(filename, columns=['corporate_name'])
-        table = table.filter(pc.field('corporate_name').is_valid())
+        table = pq.read_table(filename, columns=['corporate_name'] )
+        table = table.filter (pc.field('corporate_name').is_valid())
 
         return table.to_pandas().sample(n)
 
     def time_query(self, query, params):
         start = time.time()
-        self.cursor.execute(query, params)
+
+        self.cursor.execute (query, params)
         self.cursor.fetchall()
 
         return time.time() - start
@@ -123,6 +128,7 @@ class TestSQLite(TestSQLiteBase):
                     ''',
                     (cnpj, name, capital)
                 )
+
                 results = self.cursor.fetchall()
 
                 if not results:
@@ -158,6 +164,7 @@ class TestSQLite(TestSQLiteBase):
                     ''',
                     (cnpj, order, dv)
                 )
+
                 results = self.cursor.fetchall()
 
                 if not results:
@@ -197,7 +204,11 @@ class TestSQLite(TestSQLiteBase):
                 ''',
                 (match,)
             )
-            rowids = [r[0] for r in self.cursor.fetchall()]
+
+            rowids = [
+                r[0]
+                for r in self.cursor.fetchall()
+            ]
 
             if not rowids:
                 self.fail(f"❌ No FTS match found for prefix '{match}'")
@@ -209,18 +220,25 @@ class TestSQLite(TestSQLiteBase):
                 ''',
                 rowids
             )
-            names = [r[0] for r in self.cursor.fetchall()]
+
+            names = [
+                r[0]
+                for r in self.cursor.fetchall()
+            ]
 
             if not all(
-                any(w.startswith(prefix) for w in name.split())
+                any(
+                    w.startswith(prefix)
+                    for w in name.split()
+                )
                 for name in names
             ):
                 self.fail(f"❌ RowIDs found, but not all start with the prefix '{prefix}'")
             else:
-                print(f"✅ FTS5 match success")
-                print(f"🔹 Full name sampled: {name}")
+                print(f"✅ FTS5 match success"                   )
+                print(f"🔹 Full name sampled: {name}"            )
                 print(f"🔹 First name used as prefix: '{prefix}'")
-                print( "🔹 Matching names returned from SQLite:")
+                print( "🔹 Matching names returned from SQLite:" )
 
                 for name in names:
                     print(f"   • {name}")
@@ -245,7 +263,11 @@ class TestSQLite(TestSQLiteBase):
                 ''',
                 (match,)
             )
-            rowids = [r[0] for r in self.cursor.fetchall()]
+
+            rowids = [
+                r[0]
+                for r in self.cursor.fetchall()
+            ]
 
             if not rowids:
                 self.fail(f"❌ No FTS match found for prefix '{match}'")
@@ -257,7 +279,11 @@ class TestSQLite(TestSQLiteBase):
                 ''',
                 rowids
             )
-            names = [r[0] for r in self.cursor.fetchall()]
+
+            names = [
+                r[0]
+                for r in self.cursor.fetchall()
+            ]
 
             if not all(
                 prefix.upper() in name.upper()
@@ -272,9 +298,9 @@ class TestSQLite(TestSQLiteBase):
 
                 self.fail(f"❌ RowIDs found, but not all start with the prefix '{prefix}'")
             else:
-                print(f"✅ FTS5 match success")
-                print(f"🔹 Full trade name sampled: {trade_name}")
-                print(f"🔹 First name used as prefix: '{prefix}'")
+                print(f"✅ FTS5 match success"                        )
+                print(f"🔹 Full trade name sampled: {trade_name}"     )
+                print(f"🔹 First name used as prefix: '{prefix}'"     )
                 print( "🔹 Matching trade names returned from SQLite:")
 
                 for name in names:
@@ -300,7 +326,11 @@ class TestSQLite(TestSQLiteBase):
                 ''',
                 (match,)
             )
-            rowids = [r[0] for r in self.cursor.fetchall()]
+
+            rowids = [
+                r[0]
+                for r in self.cursor.fetchall()
+            ]
 
             if not rowids:
                 self.fail(f"❌ No FTS match found for prefix '{match}'")
@@ -312,7 +342,11 @@ class TestSQLite(TestSQLiteBase):
                 ''',
                 rowids
             )
-            names = [r[0] for r in self.cursor.fetchall()]
+
+            names = [
+                r[0]
+                for r in self.cursor.fetchall()
+            ]
 
             if not all(
                 prefix.upper() in name.upper()
@@ -327,7 +361,7 @@ class TestSQLite(TestSQLiteBase):
 
                 self.fail(f"❌ RowIDs found, but not all contain the prefix '{prefix}'")
             else:
-                print(f"✅ FTS5 match success")
+                print(f"✅ FTS5 match success"                            )
                 print(f"🔹 Full corporate name sampled: {corporate_name}" )
                 print(f"🔹 First name used as prefix: '{prefix}'"         )
                 print( "🔹 Matching corporate names returned from SQLite:")
@@ -410,7 +444,7 @@ class TestSQLiteQueries(TestSQLiteBase):
             )
 
             times_like.append(t1)
-            times_fts.append (t2)
+            times_fts .append(t2)
 
         self.avg_lt = sum(times_like) / len(times_like)
         self.avg_ft = sum(times_fts ) / len(times_fts )
@@ -452,7 +486,7 @@ class TestSQLiteQueries(TestSQLiteBase):
             )
 
             times_like.append(t1)
-            times_fts.append (t2)
+            times_fts .append(t2)
 
         self.avg_lc = sum(times_like) / len(times_like)
         self.avg_fc = sum(times_fts ) / len(times_fts )
@@ -482,6 +516,7 @@ class TestSQLiteQueries(TestSQLiteBase):
         self.test_query_time_fts_corporate_name(verbose=False)
 
         labels = ['LIKE', 'FTS5']
+
         partner_times = [self.avg_lp, self.avg_fp]
         trade_times   = [self.avg_lt, self.avg_ft]
         company_times = [self.avg_lc, self.avg_fc]
@@ -494,40 +529,55 @@ class TestSQLiteQueries(TestSQLiteBase):
         )
 
         fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-        fig.suptitle("Query Time Comparison", fontsize=14)
+
+        fig.suptitle(
+            "Query Time Comparison", fontsize=14
+        )
 
         axs[0].bar(
-            x                           ,
-            partner_times               ,
-            color=['#FF9999', '#99CCFF'],
+            x            ,
+            partner_times,
+
+            color=[
+                '#FF9999',
+                '#99CCFF',
+            ],
         )
-        axs[0].set_title("partners.name_partner")
-        axs[0].set_ylabel("Average Time (s)")
-        axs[0].set_xticks(x)
+        axs[0].set_title      ("partners.name_partner")
+        axs[0].set_ylabel     ("Average Time (s)"     )
+        axs[0].set_xticks     (x     )
         axs[0].set_xticklabels(labels)
 
         axs[1].bar(
-            x                           ,
-            trade_times                 ,
-            color=['#FF9999', '#99CCFF'],
+            x          ,
+            trade_times,
+
+            color=[
+                '#FF9999',
+                '#99CCFF',
+            ],
         )
-        axs[1].set_title("business.trade_name")
-        axs[1].set_xticks(x)
+        axs[1].set_title      ("business.trade_name")
+        axs[1].set_xticks     (x     )
         axs[1].set_xticklabels(labels)
 
         axs[2].bar(
-            x                           ,
-            company_times               ,
-            color=['#FF9999', '#99CCFF'],
+            x            ,
+            company_times,
+
+            color=[
+                '#FF9999',
+                '#99CCFF',
+            ],
         )
-        axs[2].set_title("companies.corporate_name")
-        axs[2].set_xticks(x)
+        axs[2].set_title      ("companies.corporate_name")
+        axs[2].set_xticks     (x     )
         axs[2].set_xticklabels(labels)
 
         for ax in axs:
             ax.set_ylim(0, y * 1.1)
 
         plt.tight_layout()
-        plt.savefig(OUTPUT_FILE)
+        plt.savefig     (OUTPUT_FILE)
 
         print(f"✅ Chart saved at: {OUTPUT_PATH}")

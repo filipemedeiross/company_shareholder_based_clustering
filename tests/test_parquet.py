@@ -1,10 +1,10 @@
 import csv
 import random
 import unittest
+
 import pandas as pd
 
-from fastparquet import ParquetFile
-
+from fastparquet       import ParquetFile
 from scripts.constants import DICT_DIR         , \
                               PARQUET_PARTNERS , \
                               PARQUET_COMPANIES, \
@@ -19,7 +19,12 @@ class TestParquet(unittest.TestCase):
 
         with open(filename, mode='rb') as f:
             pf   = ParquetFile(f)
-            idxs = sorted(random.sample(range(pf.count()), n))
+
+            idxs = sorted(
+                random.sample(
+                    range(pf.count()), n
+                )
+            )
 
             current_row = 0
             for rg in pf.iter_row_groups():
@@ -28,7 +33,7 @@ class TestParquet(unittest.TestCase):
                 local_indices = [
                     i - current_row
                     for i in idxs
-                    if current_row <= i < current_row + num_rows
+                    if  current_row <= i < current_row + num_rows
                 ]
 
                 if local_indices:
@@ -42,7 +47,8 @@ class TestParquet(unittest.TestCase):
 
 
     def find_row_partners(
-        self    ,
+        self,
+
         files   ,
         cols    ,
         cnpj_col,
@@ -55,7 +61,7 @@ class TestParquet(unittest.TestCase):
 
                 for row in reader:
                     if (
-                        row[cnpj_col].zfill(8) == target.cnpj and
+                        row[cnpj_col].zfill(8) == target.cnpj        and
                         row[name_col]          == target.name_partner
                     ):
                         return [row[idx] for idx in cols]
@@ -64,7 +70,8 @@ class TestParquet(unittest.TestCase):
 
 
     def find_row_business(
-        self     ,
+        self,
+
         files    ,
         cols     ,
         cnpj_col ,
@@ -93,6 +100,7 @@ class TestParquet(unittest.TestCase):
         print()
 
         CNPJ_COL, NAME_COL, _ = COLS_PARTNERS
+
         SOCIOS_PATH = [
             DICT_DIR['Socios'] / f'socios{i}.csv'
             for i in range(10)
@@ -111,9 +119,9 @@ class TestParquet(unittest.TestCase):
 
             cnpj, name, start_date = row
             with self.subTest(
-                cnpj=cnpj       ,
-                partner=name    ,
-                start=start_date,
+                cnpj   =cnpj      ,
+                partner=name      ,
+                start  =start_date,
             ):
                 if found:
                     print(
@@ -155,14 +163,14 @@ class TestParquet(unittest.TestCase):
 
             cnpj, order, dv, branch, trade_name, closing, opening, cep = row
             with self.subTest(
-                cnpj=cnpj      ,
-                order=order    ,
-                dv=dv          ,
-                branch=branch  ,
-                name=trade_name,
-                start=opening  ,
-                end=closing    ,
-                cep=cep        ,
+                cnpj  =cnpj      ,
+                order =order     ,
+                dv    =dv        ,
+                branch=branch    ,
+                name  =trade_name,
+                start =opening   ,
+                end   =closing   ,
+                cep   =cep       ,
             ):
                 if found:
                     print(
@@ -188,14 +196,8 @@ class TestParquet(unittest.TestCase):
         cnpjs_companies = set(pd.read_parquet(PARQUET_COMPANIES, columns=['cnpj']).cnpj)
         cnpjs_business  = set(pd.read_parquet(PARQUET_BUSINESS , columns=['cnpj']).cnpj)
 
-        self.assertTrue(
-            cnpjs_partners.issubset(cnpjs_companies),
-            "❌ Not all partner CNPJs are present in companies.parquet"
-        )
-        self.assertTrue(
-            cnpjs_partners.issubset(cnpjs_business),
-            "❌ Not all partner CNPJs are present in business.parquet"
-        )
+        self.assertTrue(cnpjs_partners.issubset(cnpjs_companies), "❌ Not all partner CNPJs are present in companies.parquet")
+        self.assertTrue(cnpjs_partners.issubset(cnpjs_business ), "❌ Not all partner CNPJs are present in business.parquet" )
 
         print(f"✅ Percentage of partner CNPJs present in companies: {(len(cnpjs_partners) / len(cnpjs_companies)) * 100:.2f}%")
         print(f"✅ Total CNPJs with data in business: {len(cnpjs_business)}")

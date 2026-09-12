@@ -3,8 +3,7 @@ import duckdb
 import sqlite3
 import unittest
 
-from scripts.constants import DUCKDB_PATH, \
-                              SQLITE_PATH
+from scripts.constants import DUCKDB_PATH, SQLITE_PATH
 
 
 class TestDuckDB(unittest.TestCase):
@@ -14,9 +13,9 @@ class TestDuckDB(unittest.TestCase):
         cls.duckdb_conn = duckdb .connect(DUCKDB_PATH)
 
         cls.tables = [
-            "business",
-            "partners",
-            "companies"
+            "business" ,
+            "partners" ,
+            "companies",
         ]
 
     @classmethod
@@ -26,7 +25,10 @@ class TestDuckDB(unittest.TestCase):
 
     def get_random_rows(self, table, count=3):
         cursor = self.sqlite_conn.cursor()
-        total  = cursor.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+
+        total  = cursor.execute(
+            f"SELECT COUNT(*) FROM {table}"
+        ).fetchone()[0]
 
         return [
             cursor.execute(
@@ -49,11 +51,15 @@ class TestDuckDB(unittest.TestCase):
             if val is None:
                 where.append(f"{col} IS NULL")
             else:
-                where.append(f"{col} = ?")
+                where.append(f"{col} = ?"    )
 
         result = self.duckdb_conn.execute(
             f"SELECT COUNT(*) FROM {table} WHERE {' AND '.join(where)}",
-            [v for v in row if v is not None]
+            [
+                v
+                for v in row
+                if  v is not None
+            ]
         ).fetchone()[0]
 
         return result
@@ -62,7 +68,9 @@ class TestDuckDB(unittest.TestCase):
         for table in self.tables:
             with self.subTest(table=table):
                 for row in self.get_random_rows(table):
-                    self.assertEqual(self.row_exists_in_duckdb(table, row), 1)
+                    self.assertEqual(
+                        self.row_exists_in_duckdb(table, row), 1
+                    )
 
 
 if __name__ == '__main__':
