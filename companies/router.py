@@ -15,7 +15,7 @@ class RFBRouter:
         is_rfb_1 = self.is_rfb(obj1.__class__)
         is_rfb_2 = self.is_rfb(obj2.__class__)
 
-        if is_rfb_1 and is_rfb_2:
+        if     is_rfb_1 and     is_rfb_2:
             return True
         if not is_rfb_1 and not is_rfb_2:
             return True
