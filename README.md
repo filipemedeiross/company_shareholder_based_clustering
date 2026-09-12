@@ -52,9 +52,3 @@ Harry J. W. Percival. **Test-Driven Development with Python**. O’Reilly Media,
 Geek University. **Programação Web com Python e Django Framework: Essencial**. Udemy.
 
 Luiz Otávio Miranda. **Curso de Django Web Framework e Django Rest Framework (DRF)**. Udemy.
-
-Django Documentation: <https://docs.djangoproject.com/>
-
-### SQLite
-
-SQLite Tutorial: <https://www.sqlitetutorial.net/>
