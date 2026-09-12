@@ -40,10 +40,10 @@ ROOT_URLCONF = 'hermes.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates' ,
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
+        'BACKEND'  : 'django.template.backends.django.DjangoTemplates' ,
+        'DIRS'     : [BASE_DIR / 'templates']                          ,
+        'APP_DIRS' : True                                              ,
+        'OPTIONS'  : {
             'context_processors': [
                 'django.template.context_processors.request'         ,
                 'django.contrib.auth.context_processors.auth'        ,
@@ -60,11 +60,11 @@ WSGI_APPLICATION = 'hermes.wsgi.application'
 
 DATABASES = {
     "default" : {
-        "ENGINE" : "django.db.backends.sqlite3",
+        "ENGINE" : "django.db.backends.sqlite3"       ,
         "NAME"   : BASE_DIR / "data/sqlite/db.sqlite3",
     },
-    "rfb" : {
-        "ENGINE"  : "django.db.backends.sqlite3",
+    "rfb"     : {
+        "ENGINE"  :  "django.db.backends.sqlite3"                                                   ,
         "NAME"    : f"file:{(BASE_DIR / 'data/sqlite/rfb.sqlite3').as_posix()}?mode=ro&cache=shared",
         "OPTIONS" : {"uri": True},
     },
@@ -76,18 +76,10 @@ DATABASE_ROUTERS = ["companies.router.RFBRouter"]
 # Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    { 'NAME' : 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator' },
+    { 'NAME' : 'django.contrib.auth.password_validation.MinimumLengthValidator'           },
+    { 'NAME' : 'django.contrib.auth.password_validation.CommonPasswordValidator'          },
+    { 'NAME' : 'django.contrib.auth.password_validation.NumericPasswordValidator'         },
 ]
 
 
