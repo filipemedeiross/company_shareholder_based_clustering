@@ -2,13 +2,14 @@ import pandas as pd
 
 
 def csv2parquet(
-    parquet_path  ,
-    file_paths    ,
-    usecols       ,
-    names         ,
-    chunksize     ,
+    parquet_path,
+    file_paths  ,
+    usecols     ,
+    names       ,
+    chunksize   ,
+
     transform=None,
-    sort_by=None  ,
+    sort_by  =None,
 ):
     first_write = True
 
@@ -16,14 +17,15 @@ def csv2parquet(
         print(f"[Transform] Reading {file_path.name}")
 
         chunks = pd.read_csv(
-            file_path          ,
-            sep=';'            ,
-            usecols=usecols    ,
-            names=names        ,
-            chunksize=chunksize,
-            low_memory=False   ,
-            encoding='latin-1' ,
-            on_bad_lines='skip',
+            file_path,
+
+            sep         =';'       ,
+            usecols     =usecols   ,
+            names       =names     ,
+            chunksize   =chunksize ,
+            low_memory  =False     ,
+            encoding    ='latin-1' ,
+            on_bad_lines='skip'    ,
         )
 
         for chunk in chunks:
@@ -34,9 +36,9 @@ def csv2parquet(
                 chunk.sort_values(sort_by, inplace=True)
 
             chunk.to_parquet(
-                parquet_path          ,
+                parquet_path,
                 engine='fastparquet'  ,
-                index=False           ,
+                index =False          ,
                 append=not first_write,
             )
 
