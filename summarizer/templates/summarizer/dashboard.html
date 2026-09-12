@@ -1,4 +1,5 @@
 {% extends 'global/base.html' %}
+
 {% load humanize %}
 
 {% block content %}
@@ -16,20 +17,20 @@
                     <thead>
                         <tr>
                             <th>Metric</th>
-                            <th>Value</th>
+                            <th>Value </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Minimum Capital</td>
+                            <td>Minimum Capital                              </td>
                             <td>R$ {{ stats.companies.min_capital|intcomma }}</td>
                         </tr>
                         <tr>
-                            <td>Maximum Capital</td>
+                            <td>Maximum Capital                              </td>
                             <td>R$ {{ stats.companies.max_capital|intcomma }}</td>
                         </tr>
                         <tr>
-                            <td>Average Capital</td>
+                            <td>Average Capital                              </td>
                             <td>R$ {{ stats.companies.avg_capital|intcomma }}</td>
                         </tr>
                     </tbody>
@@ -48,16 +49,16 @@
                     <thead>
                         <tr>
                             <th>Metric</th>
-                            <th>Date</th>
+                            <th>Date  </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Oldest Partner</td>
+                            <td>Oldest Partner                                         </td>
                             <td>{{ stats.partners.earliest_partner_date|date:"d/m/Y" }}</td>
                         </tr>
                         <tr>
-                            <td>Most Recent Partner</td>
+                            <td>Most Recent Partner                                  </td>
                             <td>{{ stats.partners.latest_partner_date|date:"d/m/Y" }}</td>
                         </tr>
                     </tbody>
@@ -76,16 +77,16 @@
                     <thead>
                         <tr>
                             <th>Metric</th>
-                            <th>Value</th>
+                            <th>Value </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Total Businesses</td>
+                            <td>Total Businesses                            </td>
                             <td>{{ stats.business.total_business|intcomma }}</td>
                         </tr>
                         <tr>
-                            <td>Unique Businesses</td>
+                            <td>Unique Businesses                            </td>
                             <td>{{ stats.business.unique_business|intcomma }}</td>
                         </tr>
                     </tbody>
@@ -99,16 +100,16 @@
                     <thead>
                         <tr>
                             <th>Metric</th>
-                            <th>Date</th>
+                            <th>Date  </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Earliest Opening</td>
+                            <td>Earliest Opening                                  </td>
                             <td>{{ stats.business.earliest_opening|date:"d/m/Y" }}</td>
                         </tr>
                         <tr>
-                            <td>Most Recent Opening</td>
+                            <td>Most Recent Opening                             </td>
                             <td>{{ stats.business.latest_opening|date:"d/m/Y" }}</td>
                         </tr>
                     </tbody>

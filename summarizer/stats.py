@@ -1,10 +1,10 @@
 import duckdb
+
 import pandas as pd
 
-from django.core.cache import cache
-
-from scripts.constants    import DUCKDB_PATH
-from summarizer.constants import CACHE_TIMEOUT
+from django.core.cache     import cache
+from scripts    .constants import DUCKDB_PATH
+from summarizer .constants import CACHE_TIMEOUT
 
 
 def get_connection():
@@ -43,7 +43,7 @@ def get_statistics():
 
     for field in [
         'earliest_partner_date',
-        'latest_partner_date'
+        'latest_partner_date'  ,
     ]:
         if  stats['partners'][field] is not None:
             stats['partners'][field] = pd.to_datetime(stats['partners'][field]).date()
@@ -62,12 +62,12 @@ def get_statistics():
 
     for field in [
         'earliest_opening',
-        'latest_opening'
+        'latest_opening'  ,
     ]:
         if  stats['business'][field] is not None:
             stats['business'][field] = pd.to_datetime(stats['business'][field]).date()
 
-    cache.set('dashboard_stats', stats, CACHE_TIMEOUT)
+    cache.set  ('dashboard_stats', stats, CACHE_TIMEOUT)
     conn .close()
 
     return stats

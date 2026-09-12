@@ -7,5 +7,5 @@ def dashboard(request):
     return render(
         request,
         'summarizer/dashboard.html',
-        {'stats': get_statistics()}
+        {'stats': get_statistics()},
     )
