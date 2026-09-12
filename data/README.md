@@ -176,4 +176,4 @@ It opens DuckDB read-only and imports only two node tables and their bipartite r
 - `Partner(name_partner)`, keyed by the exact partner.
 - `(Partner)-[:PARTNER_OF {start_date}]->(Company)`, with one relationship per company/partner pair. Repeated pairs retain the earliest non-null entry date.
 
-Companies without partners are retained and the `business` table is not imported.
+> Note: Companies without partners are retained and the `business` table is not imported.
