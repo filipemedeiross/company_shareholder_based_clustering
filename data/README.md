@@ -172,8 +172,8 @@ python -m scripts.6_load_ladybug
 
 It opens DuckDB read-only and imports only two node tables and their bipartite relationships:
 
-- `Company(cnpj, corporate_name, capital)`, keyed by the basic CNPJ as text.
-- `Partner(name_partner)`, keyed by the exact partner.
-- `(Partner)-[:PARTNER_OF {start_date}]->(Company)`, with one relationship per company/partner pair. Repeated pairs retain the earliest non-null entry date.
+- `Company(cnpj, corporate_name, capital)`
+- `Partner(name_partner)`
+- `(Partner)-[:PARTNER_OF {start_date}]->(Company)`
 
-> Note: Companies without partners are retained and the `business` table is not imported.
+> ⚠️ **Note**: Each company/partner pair is represented by a single relationship. For repeated pairs, the earliest non-null entry date is retained. Companies without partners are preserved and the `business` table is not imported.
