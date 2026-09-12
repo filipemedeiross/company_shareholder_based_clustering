@@ -37,8 +37,8 @@ def fetch_in_chunks(cursor, chunk_size=10_000):
 # ===========================
 ENV_VAR = "NEO4J_PASSWORD"
 
-NEO4J_URI  = "neo4j://127.0.0.1:7687"
-NEO4J_USER = "neo4j"
+NEO4J_URI      = "neo4j://127.0.0.1:7687"
+NEO4J_USER     = "neo4j"
 NEO4J_PASSWORD = get_secret_from_env(ENV_VAR)
 
 driver = neo4j.GraphDatabase.driver(
@@ -54,7 +54,7 @@ with driver.session() as session:
 # Connection to local SQLite
 # ==========================
 conn   = sqlite3.connect(SQLITE_PATH)
-cursor = conn.cursor()
+cursor = conn   .cursor ()
 
 cursor.execute("""
     SELECT 
