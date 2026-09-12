@@ -2,11 +2,11 @@
 
     <form class="search-form" action="{{ action }}">
         <input
-            type="text"
-            name="q"
-            value="{{ search_query }}"
+            type       ="text"
+            name       ="q"
+            value      ="{{ search_query }}"
             placeholder="Search for companies..."
-            aria-label="search-companies"
+            aria-label ="search-companies"
             required
         />
         <button type="submit" aria-label="search">
@@ -16,7 +16,10 @@
 
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} centered" role="alert">
+            <div
+                class="alert alert-{{ message.tags }} centered"
+                role ="alert"
+            >
                 {{ message }}
             </div>
         {% endfor %}

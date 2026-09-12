@@ -1,10 +1,11 @@
 {% extends 'global/base.html' %}
+
 {% load humanize %}
 
 {% block content %}
 <div class="centered">
     <div class="breadcrumb">
-        <a href="{% url 'companies:list' %}">Companies</a> >
+        <a href="{% url 'companies:list' %}">Companies</a>
         <span>{{ company }}</span>
     </div>
 
@@ -22,30 +23,31 @@
 
     <div class="section">
         <h3>Businesses</h3>
+
         {% if business %}
             <div class="table-scroll">
                 <table class="company-table">
                     <thead>
                         <tr>
-                            <th>CNPJ</th>
-                            <th>Trade name</th>
+                            <th>CNPJ        </th>
+                            <th>Trade name  </th>
                             <th>Opening Date</th>
                             <th>Closing Date</th>
-                            <th>CEP</th>
-                            <th>Branch</th>
+                            <th>CEP         </th>
+                            <th>Branch      </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for establishment in business %}
                             <tr>
-                                <td>{{ establishment }}</td>
-                                <td>{{ establishment.trade_name|default:"N/A" }}</td>
-                                <td>{{ establishment.opening_date|date:"d/m/Y"|default:"N/A" }}</td>
+                                <td>{{ establishment }}                                          </td>
+                                <td>{{ establishment.trade_name|default:"N/A" }}                 </td>
+                                <td>{{ establishment.opening_date|date:"d/m/Y"|default:"N/A" }}  </td>
                                 <td>{{ establishment.closing_date|date:"d/m/Y"|default:"Ativo" }}</td>
-                                <td>{{ establishment.cep|default:"N/A" }}</td>
+                                <td>{{ establishment.cep|default:"N/A" }}                        </td>
                                 <td>
                                     {% if establishment.branch %}
-                                        <span class="badge main">No</span>
+                                        <span class="badge main"  >No </span>
                                     {% else %}
                                         <span class="badge branch">Yes</span>
                                     {% endif %}
@@ -62,19 +64,20 @@
 
     <div class="section">
         <h3>Partners</h3>
+
         {% if partners %}
             <div class="table-scroll">
                 <table class="company-table">
                     <thead>
                         <tr>
                             <th>Name Partner</th>
-                            <th>Start Date</th>
+                            <th>Start Date  </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for partner in partners %}
                             <tr>
-                                <td>{{ partner.name_partner|default:"N/A" }}</td>
+                                <td>{{ partner.name_partner|default:"N/A" }}           </td>
                                 <td>{{ partner.start_date|date:"d/m/Y"|default:"N/A" }}</td>
                             </tr>
                         {% endfor %}

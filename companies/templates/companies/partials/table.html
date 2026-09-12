@@ -1,18 +1,23 @@
 {% load humanize %}
+
 <section id="company-list" class="centered">
     {% if objects %}
         <table class="company-table">
             <thead>
                 <tr>
-                    <th>Cnpj</th>
-                    <th>Name</th>
+                    <th>Cnpj   </th>
+                    <th>Name   </th>
                     <th>Capital</th>
                 </tr>
             </thead>
             <tbody>
                 {% for object in objects %}
                     <tr class="company-row">
-                        <td><a href="{{ object.get_absolute_url }}">{{ object.cnpj }}</a></td>
+                        <td>
+                            <a href="{{ object.get_absolute_url }}">
+                                {{ object.cnpj }}
+                            </a>
+                        </td>
                         <td>{{ object.corporate_name   }}</td>
                         <td>{{ object.capital|intcomma }}</td>
                     </tr>
