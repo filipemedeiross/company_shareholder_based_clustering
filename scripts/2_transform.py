@@ -2,19 +2,19 @@ import duckdb
 import pandas as pd
 
 from .process   import csv2parquet
-from .constants import CHUNKSIZE,         \
-                       COLS_PARTNERS,     \
-                       COLS_COMPANIES,    \
-                       COLS_BUSINESS,     \
-                       NAMES_PARTNERS,    \
-                       NAMES_COMPANIES,   \
-                       NAMES_BUSINESS,    \
-                       SORT_PARTNERS,     \
-                       SORT_COMPANIES,    \
-                       SORT_BUSINESS,     \
-                       DICT_DIR,          \
-                       PARQUET_DIR,       \
-                       PARQUET_PARTNERS,  \
+from .constants import CHUNKSIZE        , \
+                       COLS_PARTNERS    , \
+                       COLS_COMPANIES   , \
+                       COLS_BUSINESS    , \
+                       NAMES_PARTNERS   , \
+                       NAMES_COMPANIES  , \
+                       NAMES_BUSINESS   , \
+                       SORT_PARTNERS    , \
+                       SORT_COMPANIES   , \
+                       SORT_BUSINESS    , \
+                       DICT_DIR         , \
+                       PARQUET_DIR      , \
+                       PARQUET_PARTNERS , \
                        PARQUET_COMPANIES, \
                        PARQUET_BUSINESS
 
@@ -25,11 +25,12 @@ con = duckdb.connect()
 def fn_partners(df):
     df.dropna(inplace=True)
 
-    df.cnpj = df.cnpj.astype(str).str.zfill(8)
+    df.cnpj       = df.cnpj.astype(str).str.zfill(8)
     df.start_date = pd.to_datetime(
         df
         .start_date
-        .astype(str)   ,
+        .astype(str),
+
         format="%Y%m%d",
         errors="coerce",
     )
@@ -38,13 +39,13 @@ def fn_partners(df):
 
 
 def fn_companies(df):
-    df.cnpj = df.cnpj.astype(str).str.zfill(8)
+    df.cnpj    = df.cnpj.astype(str).str.zfill(8)
     df.capital = (
         df
         .capital
         .str
         .replace(r',.*', '', regex=True)
-        .astype('int64')
+        .astype ('int64')
     )
 
     query = f"""
@@ -64,9 +65,10 @@ def fn_business(df):
         .cep
         .fillna('0')
         .astype(str)
-        .str.replace('-' , '')
+
+        .str.replace('-' , ''                )
         .str.replace(r'\..*$', '', regex=True)
-        .str.zfill(8)
+        .str.zfill  (8)
     )
 
     df.cnpj       = df.cnpj      .astype(str).str.zfill(8)
@@ -76,14 +78,16 @@ def fn_business(df):
     df.closing_date = pd.to_datetime(
         df
         .closing_date
-        .astype(str)   ,
+        .astype(str) ,
+
         format="%Y%m%d",
         errors="coerce",
     )
     df.opening_date = pd.to_datetime(
         df
         .opening_date
-        .astype(str)   ,
+        .astype(str) ,
+
         format="%Y%m%d",
         errors="coerce",
     )
@@ -109,13 +113,14 @@ def main():
         ]
 
         csv2parquet(
-            PARQUET_PARTNERS     ,
-            paths_partners       ,
-            COLS_PARTNERS        ,
-            NAMES_PARTNERS       ,
-            CHUNKSIZE            ,
-            transform=fn_partners,
-            sort_by=SORT_PARTNERS,
+            PARQUET_PARTNERS,
+            paths_partners  ,
+            COLS_PARTNERS   ,
+            NAMES_PARTNERS  ,
+            CHUNKSIZE       ,
+
+            transform=fn_partners  ,
+            sort_by  =SORT_PARTNERS,
         )
 
     if PARQUET_COMPANIES.exists():
@@ -127,13 +132,14 @@ def main():
         ]
 
         csv2parquet(
-            PARQUET_COMPANIES     ,
-            paths_companies       ,
-            COLS_COMPANIES        ,
-            NAMES_COMPANIES       ,
-            CHUNKSIZE             ,
-            transform=fn_companies,
-            sort_by=SORT_COMPANIES,
+            PARQUET_COMPANIES,
+            paths_companies  ,
+            COLS_COMPANIES   ,
+            NAMES_COMPANIES  ,
+            CHUNKSIZE        ,
+
+            transform=fn_companies  ,
+            sort_by  =SORT_COMPANIES,
         )
 
     if PARQUET_BUSINESS.exists():
@@ -145,13 +151,14 @@ def main():
         ]
 
         csv2parquet(
-            PARQUET_BUSINESS     ,
-            paths_business       ,
-            COLS_BUSINESS        ,
-            NAMES_BUSINESS       ,
-            CHUNKSIZE            ,
-            transform=fn_business,
-            sort_by=SORT_BUSINESS,
+            PARQUET_BUSINESS,
+            paths_business  ,
+            COLS_BUSINESS   ,
+            NAMES_BUSINESS  ,
+            CHUNKSIZE       ,
+
+            transform=fn_business  ,
+            sort_by  =SORT_BUSINESS,
         )
 
 
