@@ -1,11 +1,10 @@
 import sqlite3
 
-from .load import insert_parquet    , \
-                  measure_query_time
 from .constants import SQLITE_PATH      , \
                        PARQUET_PARTNERS , \
                        PARQUET_COMPANIES, \
                        PARQUET_BUSINESS
+from .load      import measure_query_time, insert_parquet
 
 
 SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -17,7 +16,7 @@ SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
 print("🔌 Connecting to SQLite database and creating tables...")
 
 conn   = sqlite3.connect(SQLITE_PATH)
-cursor = conn.cursor()
+cursor = conn   .cursor ()
 
 cursor.execute('PRAGMA foreign_keys = ON')
 
