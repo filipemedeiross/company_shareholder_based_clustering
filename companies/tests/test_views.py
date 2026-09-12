@@ -213,7 +213,7 @@ class TestCompaniesDetailView(unittest.TestCase):
         )
 
     def setUp(self):
-        self.client = Client()
+        self.client = Client ()
         self.url    = reverse(
             'companies:detail',
             kwargs={'cnpj': self.cnpj}
