@@ -43,6 +43,13 @@ The analytics page presents database statistics, including company and partner c
 
 ![Analytics Page](docs/companies/analytics_page.png)
 
+## Next Steps
+
+Explore the following labeled datasets:
+
+- [Lista de licitantes inidôneos do TCU](https://dados.gov.br/dados/conjuntos-dados/licitantes-inidoneas-segundo-tcu)
+- [Favorecidos por contratos com a administração pública federal](https://portaldatransparencia.gov.br/download-de-dados/favorecidos-pj)
+
 ## References
 
 ### Django
